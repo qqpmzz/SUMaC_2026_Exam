@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SUMaC 문제 4 - p-Machine 시뮬레이션</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding: 15px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        /* 상단 파라미터 */
+        .params-row {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            background: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+        }
+
+        .param-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .param-group label {
+            font-weight: bold;
+            font-size: 1.05em;
+        }
+
+        .param-group input {
+            width: 70px;
+            padding: 6px 10px;
+            font-size: 1.05em;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .param-group input:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+
+        .param-group input.invalid {
+            border-color: #e74c3c;
+            background: #fdf2f2;
+        }
+
+        .param-info {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.85em;
+        }
+
+        .param-info span {
+            padding: 4px 10px;
+            border-radius: 15px;
+            background: #f0f0f0;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-weight: bold;
+        }
+
+        .status-badge.success {
+            background: #d5f5e3;
+            color: #1e8449;
+        }
+
+        .status-badge.fail {
+            background: #fadbd8;
+            color: #922b21;
+        }
+
+        /* 메인 레이아웃 */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 340px 1fr;
+            gap: 15px;
+        }
+
+        /* 왼쪽: 상세 보기 패널 */
+        .detail-panel {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 15px;
+        }
+
+        .detail-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .detail-header-title {
+            font-weight: bold;
+            color: #555;
+            font-size: 0.9em;
+        }
+
+        /* 시작 상태 선택 */
+        .start-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .color-toggle {
+            display: flex;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 2px solid #ddd;
+        }
+
+        .color-btn {
+            padding: 6px 14px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.85em;
+            transition: all 0.2s;
+        }
+
+        .color-btn.red-btn {
+            background: #fce4e4;
+            color: #c0392b;
+        }
+
+        .color-btn.red-btn.active {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .color-btn.black-btn {
+            background: #e8e8e8;
+            color: #2c3e50;
+        }
+
+        .color-btn.black-btn.active {
+            background: #2c3e50;
+            color: white;
+        }
+
+        .num-selector {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .num-btn {
+            width: 28px;
+            height: 28px;
+            border: 2px solid #3498db;
+            background: white;
+            border-radius: 50%;
+            font-size: 1.1em;
+            cursor: pointer;
+            color: #3498db;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .num-btn:hover {
+            background: #3498db;
+            color: white;
+        }
+
+        .current-num {
+            font-size: 1.1em;
+            font-weight: bold;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        /* 경로 비교 */
+        .paths-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .path-box {
+            background: #f8f9fa;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .path-box-header {
+            padding: 8px 12px;
+            font-weight: bold;
+            color: white;
+            font-size: 0.85em;
+        }
+
+        .path-box.path1 .path-box-header {
+            background: #3498db;
+        }
+
+        .path-box.path2 .path-box-header {
+            background: #9b59b6;
+        }
+
+        .path-steps {
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .step-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 0.85em;
+        }
+
+        .step-chip.red {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .step-chip.black {
+            background: #2c3e50;
+            color: white;
+        }
+
+        .step-arrow {
+            color: #999;
+            font-size: 0.9em;
+        }
+
+        .step-label {
+            font-size: 0.7em;
+            color: #888;
+            margin-left: 2px;
+        }
+
+        /* 결과 표시 */
+        .detail-result {
+            margin-top: 12px;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.95em;
+        }
+
+        .detail-result.match {
+            background: #d5f5e3;
+            color: #1e8449;
+        }
+
+        .detail-result.no-match {
+            background: #fadbd8;
+            color: #922b21;
+        }
+
+        /* 오른쪽: 전체 결과 테이블 */
+        .results-panel {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .results-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 12px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .results-header:hover {
+            filter: brightness(1.05);
+        }
+
+        .results-header h3 {
+            font-size: 0.95em;
+        }
+
+        .results-header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .results-summary {
+            font-size: 0.85em;
+            opacity: 0.9;
+        }
+
+        .toggle-arrow {
+            font-size: 0.8em;
+            transition: transform 0.3s;
+        }
+
+        .toggle-arrow.collapsed {
+            transform: rotate(-90deg);
+        }
+
+        .results-table-wrapper.collapsed {
+            display: none;
+        }
+
+        /* 결과 테이블 */
+        .results-table-wrapper {
+            flex: 1;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .results-table th {
+            background: #f8f9fa;
+            padding: 10px 6px;
+            font-size: 0.8em;
+            color: #666;
+            border-bottom: 2px solid #eee;
+            text-align: center;
+        }
+
+        .results-table td {
+            padding: 8px 6px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+            vertical-align: middle;
+        }
+
+        .results-table tbody tr {
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .results-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .results-table tbody tr.selected {
+            background: #e8f4fd;
+        }
+
+        /* 상태 표시 칩 */
+        .state-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 0.85em;
+        }
+
+        .state-chip.red {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        .state-chip.black {
+            background: linear-gradient(135deg, #2c3e50, #1a252f);
+            color: white;
+        }
+
+        /* 결과 아이콘 */
+        .result-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 0.8em;
+        }
+
+        .result-icon.pass { background: #27ae60; }
+        .result-icon.fail { background: #e74c3c; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 상단 파라미터 -->
+        <div class="params-row">
+            <div class="param-group">
+                <label>p =</label>
+                <input type="number" id="input-p" value="7" min="2" max="99">
+            </div>
+            <div class="param-group">
+                <label>k =</label>
+                <input type="number" id="input-k" value="1" min="1" max="99">
+            </div>
+            <div class="param-info">
+                <span id="gcd-info">gcd(1,7) = 1</span>
+                <span class="status-badge" id="successful-badge">Successful</span>
+                <span class="status-badge" id="special-badge">Special</span>
+            </div>
+        </div>
+
+        <!-- 메인 레이아웃 -->
+        <div class="main-layout">
+            <!-- 왼쪽: 상세 보기 -->
+            <div class="detail-panel">
+                <div class="detail-header">
+                    <span class="detail-header-title">시작 상태:</span>
+                    <div class="start-selector">
+                        <div class="color-toggle">
+                            <button class="color-btn red-btn active" id="btn-red" onclick="setColor(true)">빨강</button>
+                            <button class="color-btn black-btn" id="btn-black" onclick="setColor(false)">검정</button>
+                        </div>
+                        <div class="num-selector">
+                            <button class="num-btn" onclick="changeNum(-1)">−</button>
+                            <span class="current-num" id="current-num">1</span>
+                            <button class="num-btn" onclick="changeNum(1)">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="paths-container">
+                    <div class="path-box path1">
+                        <div class="path-box-header">경로 1: Toggle → Crank</div>
+                        <div class="path-steps" id="detail-path1"></div>
+                    </div>
+                    <div class="path-box path2">
+                        <div class="path-box-header">경로 2: Crank<sup id="k-sup-detail">1</sup> → Toggle</div>
+                        <div class="path-steps" id="detail-path2"></div>
+                    </div>
+                </div>
+
+                <div class="detail-result" id="detail-result"></div>
+            </div>
+
+            <!-- 오른쪽: 전체 결과 -->
+            <div class="results-panel">
+                <div class="results-header" onclick="toggleResultsTable()">
+                    <h3>Special 조건: (Toggle → Crank) = (Crank<sup id="k-sup">1</sup> → Toggle)</h3>
+                    <div class="results-header-right">
+                        <span class="results-summary" id="results-summary">로딩중...</span>
+                        <span class="toggle-arrow" id="toggle-arrow">▼</span>
+                    </div>
+                </div>
+                <div class="results-table-wrapper">
+                    <table class="results-table">
+                        <thead>
+                            <tr>
+                                <th>시작</th>
+                                <th>T→C</th>
+                                <th>C<sup id="k-sup-th">1</sup>→T</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="results-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let p = 7;
+        let k = 1;
+        let selectedRed = true;
+        let selectedNum = 1;
+        let allResults = [];
+
+        // 초기화
+        function init() {
+            updateAll();
+        }
+
+        // 파라미터 변경 - p
+        document.getElementById('input-p').addEventListener('input', function() {
+            const val = parseInt(this.value);
+            if (!isNaN(val) && val >= 2) {
+                p = val;
+                if (selectedNum > p) {
+                    selectedNum = 1;
+                    document.getElementById('current-num').textContent = selectedNum;
+                }
+                updateAll();
+            }
+        });
+
+        // 파라미터 변경 - k
+        document.getElementById('input-k').addEventListener('input', function() {
+            const val = parseInt(this.value);
+            if (!isNaN(val) && val >= 1) {
+                k = val;
+                updateAll();
+            }
+        });
+
+        function updateAll() {
+            updateKLabels();
+            updateGcdDisplay();
+            updateValidation();
+            runAllTests();
+            updateDetailView();
+        }
+
+        function updateGcdDisplay() {
+            const g = gcd(k, p);
+            document.getElementById('gcd-info').textContent = `gcd(${k},${p}) = ${g}`;
+        }
+
+        function updateValidation() {
+            const inputP = document.getElementById('input-p');
+            const inputK = document.getElementById('input-k');
+
+            // p가 소수인지 확인
+            if (!isPrime(p)) {
+                inputP.classList.add('invalid');
+            } else {
+                inputP.classList.remove('invalid');
+            }
+
+            // k가 유효한지 확인 (1 <= k <= p)
+            if (k > p) {
+                inputK.classList.add('invalid');
+            } else {
+                inputK.classList.remove('invalid');
+            }
+        }
+
+        function updateKLabels() {
+            document.getElementById('k-sup').textContent = k;
+            document.getElementById('k-sup-th').textContent = k;
+            document.getElementById('k-sup-detail').textContent = k;
+        }
+
+        function setColor(isRed) {
+            selectedRed = isRed;
+            document.getElementById('btn-red').classList.toggle('active', isRed);
+            document.getElementById('btn-black').classList.toggle('active', !isRed);
+            updateDetailView();
+            highlightSelectedRow();
+        }
+
+        function changeNum(delta) {
+            selectedNum += delta;
+            if (selectedNum < 1) selectedNum = p;
+            if (selectedNum > p) selectedNum = 1;
+            document.getElementById('current-num').textContent = selectedNum;
+            updateDetailView();
+            highlightSelectedRow();
+        }
+
+        function selectFromTable(isRed, num) {
+            selectedRed = isRed;
+            selectedNum = num;
+            document.getElementById('btn-red').classList.toggle('active', isRed);
+            document.getElementById('btn-black').classList.toggle('active', !isRed);
+            document.getElementById('current-num').textContent = num;
+            updateDetailView();
+            highlightSelectedRow();
+        }
+
+        function highlightSelectedRow() {
+            const rows = document.querySelectorAll('.results-table tbody tr');
+            rows.forEach((row, i) => {
+                if (i < allResults.length) {
+                    const result = allResults[i];
+                    const isSelected = result.startRed === selectedRed && result.startNum === selectedNum;
+                    row.classList.toggle('selected', isSelected);
+                }
+            });
+        }
+
+        // 유클리드 호제법으로 gcd 계산
+        function gcd(a, b) {
+            a = Math.abs(a);
+            b = Math.abs(b);
+            while (b) {
+                const temp = b;
+                b = a % b;
+                a = temp;
+            }
+            return a;
+        }
+
+        function isPrime(n) {
+            if (n < 2) return false;
+            if (n === 2) return true;
+            if (n % 2 === 0) return false;
+            for (let i = 3; i * i <= n; i += 2) {
+                if (n % i === 0) return false;
+            }
+            return true;
+        }
+
+        // 상태 칩 HTML
+        function createStateChip(isRed, num) {
+            return `<span class="state-chip ${isRed ? 'red' : 'black'}">${num}</span>`;
+        }
+
+        function createStepChip(isRed, num, label) {
+            return `<span class="step-chip ${isRed ? 'red' : 'black'}">${num}</span>${label ? `<span class="step-label">${label}</span>` : ''}`;
+        }
+
+        // 시뮬레이션
+        function simulate(startRed, startNum) {
+            const path1 = [];
+            const path2 = [];
+
+            // 경로 1: Toggle → Crank
+            let red1 = startRed, num1 = startNum;
+            path1.push({ red: red1, num: num1, label: '시작' });
+            red1 = !red1;
+            path1.push({ red: red1, num: num1, label: '토글' });
+            if (red1) {
+                num1 = (num1 % p) + 1;
+            } else {
+                num1 = ((num1 + k - 1) % p) + 1;
+            }
+            path1.push({ red: red1, num: num1, label: '크랭크' });
+
+            // 경로 2: Crank^k → Toggle
+            let red2 = startRed, num2 = startNum;
+            path2.push({ red: red2, num: num2, label: '시작' });
+            // 시작 상태 직후에 현재 숫자도 표시
+            for (let i = 0; i < k; i++) {
+                if (red2) {
+                    num2 = (num2 % p) + 1;
+                } else {
+                    num2 = ((num2 + k - 1) % p) + 1;
+                }
+                path2.push({ red: red2, num: num2, label: k > 1 ? `C${i+1}` : '크랭크' });
+            }
+            red2 = !red2;
+            path2.push({ red: red2, num: num2, label: '토글' });
+
+            return {
+                startRed, startNum, path1, path2,
+                result1: { red: red1, num: num1 },
+                result2: { red: red2, num: num2 },
+                match: red1 === red2 && num1 === num2
+            };
+        }
+
+        // 모든 테스트 실행
+        function runAllTests() {
+            allResults = [];
+            let passCount = 0;
+
+            for (const startRed of [true, false]) {
+                for (let startNum = 1; startNum <= p; startNum++) {
+                    const result = simulate(startRed, startNum);
+                    allResults.push(result);
+                    if (result.match) passCount++;
+                }
+            }
+
+            // 상태 정보 업데이트
+            const g = gcd(k, p);
+            const isSuccessful = g === 1;
+            const totalTests = 2 * p;
+            const isSpecial = passCount === totalTests;
+
+            const successBadge = document.getElementById('successful-badge');
+            successBadge.textContent = 'Successful';
+            successBadge.className = 'status-badge ' + (isSuccessful ? 'success' : 'fail');
+
+            const specialBadge = document.getElementById('special-badge');
+            specialBadge.textContent = 'Special';
+            specialBadge.className = 'status-badge ' + (isSpecial ? 'success' : 'fail');
+
+            document.getElementById('results-summary').textContent = `${passCount}/${totalTests}`;
+
+            renderResultsTable();
+        }
+
+        function renderResultsTable() {
+            const tbody = document.getElementById('results-tbody');
+            tbody.innerHTML = '';
+
+            allResults.forEach((result, index) => {
+                const tr = document.createElement('tr');
+                tr.onclick = () => selectFromTable(result.startRed, result.startNum);
+
+                if (result.startRed === selectedRed && result.startNum === selectedNum) {
+                    tr.classList.add('selected');
+                }
+
+                const r1 = result.result1;
+                const r2 = result.result2;
+
+                tr.innerHTML = `
+                    <td>${createStateChip(result.startRed, result.startNum)}</td>
+                    <td>${createStateChip(r1.red, r1.num)}</td>
+                    <td>${createStateChip(r2.red, r2.num)}</td>
+                    <td><span class="result-icon ${result.match ? 'pass' : 'fail'}">${result.match ? '✓' : '✗'}</span></td>
+                `;
+
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateDetailView() {
+            const result = simulate(selectedRed, selectedNum);
+
+            // 경로 1 표시
+            const path1El = document.getElementById('detail-path1');
+            path1El.innerHTML = result.path1.map((s, i) =>
+                (i > 0 ? '<span class="step-arrow">→</span>' : '') + createStepChip(s.red, s.num, s.label)
+            ).join('');
+
+            // 경로 2 표시
+            const path2El = document.getElementById('detail-path2');
+            path2El.innerHTML = result.path2.map((s, i) =>
+                (i > 0 ? '<span class="step-arrow">→</span>' : '') + createStepChip(s.red, s.num, s.label)
+            ).join('');
+
+            // 결과 표시
+            const resultEl = document.getElementById('detail-result');
+            const r1 = result.result1;
+            const r2 = result.result2;
+            if (result.match) {
+                resultEl.className = 'detail-result match';
+                resultEl.innerHTML = `✓ 일치: ${createStateChip(r1.red, r1.num)}`;
+            } else {
+                resultEl.className = 'detail-result no-match';
+                resultEl.innerHTML = `✗ 불일치: ${createStateChip(r1.red, r1.num)} ≠ ${createStateChip(r2.red, r2.num)}`;
+            }
+        }
+
+        // 키보드 단축키
+        document.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'INPUT') return;
+
+            if (e.code === 'ArrowUp') {
+                e.preventDefault();
+                changeNum(1);
+            } else if (e.code === 'ArrowDown') {
+                e.preventDefault();
+                changeNum(-1);
+            } else if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') {
+                e.preventDefault();
+                setColor(!selectedRed);
+            }
+        });
+
+        // 결과 테이블 토글
+        function toggleResultsTable() {
+            const wrapper = document.querySelector('.results-table-wrapper');
+            const arrow = document.getElementById('toggle-arrow');
+            wrapper.classList.toggle('collapsed');
+            arrow.classList.toggle('collapsed');
+        }
+
+        init();
+    </script>
+</body>
+</html>

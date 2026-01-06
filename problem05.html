@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SUMaC 문제 5 - 개미 복제 시뮬레이션</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+
+        .time-display {
+            font-size: 2em;
+            margin-bottom: 15px;
+            color: #3498db;
+            font-weight: bold;
+        }
+
+        .grid-container {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            overflow: auto;
+            max-width: 90vw;
+            max-height: 70vh;
+        }
+
+        .grid {
+            display: grid;
+            gap: 1px;
+            background: #ccc;
+            border: 2px solid #999;
+        }
+
+        .cell {
+            width: 40px;
+            height: 40px;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .cell:hover {
+            background: #f0f0f0;
+        }
+
+        .cell.yellow-region {
+            background: #f4d03f !important;
+        }
+
+        .cell.yellow-region:hover {
+            background: #f7dc6f !important;
+        }
+
+        .cell.ant {
+            cursor: pointer;
+        }
+
+        .cell.ant::before {
+            content: '';
+            width: 28px;
+            height: 28px;
+            background: #2c3e50;
+            border-radius: 50%;
+            border: 2px solid #1a252f;
+            z-index: 2;
+        }
+
+        .cell.yellow-region.ant {
+            background: #f4d03f !important;
+        }
+
+        .cell.ant.selected::before {
+            background: #27ae60;
+            border-color: #1e8449;
+            box-shadow: 0 0 10px #27ae60;
+        }
+
+        .cell.ant.blocked {
+            cursor: not-allowed;
+            opacity: 0.4;
+        }
+
+        .cell.preview {
+            position: relative;
+        }
+
+        .cell.preview::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #e74c3c;
+            border-radius: 50%;
+            opacity: 0.8;
+            animation: pulse 1s infinite;
+            z-index: 1;
+        }
+
+        .cell.yellow-region.preview {
+            background: #f4d03f !important;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.2); opacity: 1; }
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            font-size: 1em;
+            border: 1px solid #333;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: bold;
+            background: #fff;
+            color: #333;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: #333;
+            color: #fff;
+        }
+
+        .btn:disabled {
+            background: #fff;
+            color: #999;
+            border-color: #999;
+            cursor: not-allowed;
+        }
+
+        .message {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-weight: bold;
+            display: none;
+            z-index: 100;
+            animation: slideDown 0.3s ease;
+        }
+
+        .message.success {
+            background: #27ae60;
+            color: #fff;
+        }
+
+        .message.info {
+            background: #9b59b6;
+            color: #fff;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateX(-50%) translateY(-100%); }
+            to { transform: translateX(-50%) translateY(0); }
+        }
+
+        .victory-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            flex-direction: column;
+        }
+
+        .victory-overlay.show {
+            display: flex;
+        }
+
+        .victory-text {
+            font-size: 3em;
+            color: #27ae60;
+            text-shadow: 0 0 20px #27ae60;
+            margin-bottom: 20px;
+            animation: victoryPulse 1s infinite;
+        }
+
+        .victory-subtext {
+            font-size: 1.5em;
+            color: #f4d03f;
+            margin-bottom: 30px;
+        }
+
+        @keyframes victoryPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+    </style>
+</head>
+<body>
+    <div class="time-display">t = <span id="time">0</span></div>
+
+    <div class="grid-container">
+        <div class="grid" id="grid"></div>
+    </div>
+
+    <div class="controls">
+        <button class="btn" id="btn-prev" disabled>
+            이전 (A)
+        </button>
+        <button class="btn" id="btn-next" disabled>
+            다음 (D)
+        </button>
+        <button class="btn" id="btn-reset">
+            초기화 (R)
+        </button>
+    </div>
+
+    <div class="message" id="message"></div>
+
+    <div class="victory-overlay" id="victory-overlay">
+        <div class="victory-text">목표 달성!</div>
+        <div class="victory-subtext">노란 영역이 비워졌습니다! (t = <span id="victory-time">0</span>)</div>
+        <button class="btn-reset" onclick="closeVictory()">계속하기</button>
+    </div>
+
+    <script>
+        let gridSize = 4;
+        let time = 0;
+        let ants = new Set();
+        let selectedAnts = new Set();
+        let previewCells = new Set();
+        let victoryShown = false;
+
+        // 히스토리 관련 변수
+        let history = []; // 각 상태를 저장: { ants: Set, selectedAnts: Set, gridSize: number }
+        let historyIndex = -1; // 현재 히스토리 위치
+
+        const yellowRegion = new Set([
+            '0,0', '1,0', '2,0',
+            '0,1', '1,1', '2,1',
+            '0,2', '1,2'
+        ]);
+
+        function posToKey(x, y) {
+            return `${x},${y}`;
+        }
+
+        function keyToPos(key) {
+            const [x, y] = key.split(',').map(Number);
+            return { x, y };
+        }
+
+        function saveState(selected) {
+            return {
+                ants: new Set(ants),
+                selectedAnts: new Set(selected),
+                gridSize: gridSize
+            };
+        }
+
+        function loadState(state) {
+            ants = new Set(state.ants);
+            selectedAnts = new Set(state.selectedAnts);
+            gridSize = state.gridSize;
+            updatePreviewCells();
+        }
+
+        function init() {
+            time = 0;
+            ants = new Set();
+            ants.add('0,0');
+            selectedAnts = new Set();
+            previewCells = new Set();
+            gridSize = 4;
+            victoryShown = false;
+
+            // 히스토리 초기화
+            history = [saveState([])];
+            historyIndex = 0;
+
+            document.getElementById('victory-overlay').classList.remove('show');
+            render();
+        }
+
+        function getPreviewPositions(antKey) {
+            const { x, y } = keyToPos(antKey);
+            return {
+                right: posToKey(x + 1, y),
+                up: posToKey(x, y + 1)
+            };
+        }
+
+        function canSelectAnt(antKey) {
+            if (selectedAnts.has(antKey)) return true;
+
+            const { right, up } = getPreviewPositions(antKey);
+
+            if (ants.has(right) || ants.has(up)) {
+                return false;
+            }
+
+            if (previewCells.has(right) || previewCells.has(up)) {
+                return false;
+            }
+
+            return true;
+        }
+
+        function updatePreviewCells() {
+            previewCells = new Set();
+            for (const antKey of selectedAnts) {
+                const { right, up } = getPreviewPositions(antKey);
+                previewCells.add(right);
+                previewCells.add(up);
+            }
+        }
+
+        function setsEqual(a, b) {
+            if (a.size !== b.size) return false;
+            for (const item of a) {
+                if (!b.has(item)) return false;
+            }
+            return true;
+        }
+
+        function selectAnt(x, y) {
+            const key = posToKey(x, y);
+
+            if (selectedAnts.has(key)) {
+                selectedAnts.delete(key);
+                updatePreviewCells();
+                render();
+                return;
+            }
+
+            if (!canSelectAnt(key)) {
+                showMessage('이동 위치가 막혀있어 선택할 수 없습니다!', 'info');
+                return;
+            }
+
+            selectedAnts.add(key);
+            updatePreviewCells();
+            render();
+        }
+
+        function render() {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            grid.style.gridTemplateColumns = `repeat(${gridSize}, 40px)`;
+            grid.style.gridTemplateRows = `repeat(${gridSize}, 40px)`;
+
+            const selectableAnts = new Set();
+            for (const antKey of ants) {
+                if (selectedAnts.has(antKey) || canSelectAnt(antKey)) {
+                    selectableAnts.add(antKey);
+                }
+            }
+
+            for (let y = gridSize - 1; y >= 0; y--) {
+                for (let x = 0; x < gridSize; x++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.x = x;
+                    cell.dataset.y = y;
+
+                    const key = posToKey(x, y);
+
+                    if (yellowRegion.has(key)) {
+                        cell.classList.add('yellow-region');
+                    }
+
+                    if (ants.has(key)) {
+                        cell.classList.add('ant');
+
+                        if (selectedAnts.has(key)) {
+                            cell.classList.add('selected');
+                        }
+
+                        if (!selectableAnts.has(key)) {
+                            cell.classList.add('blocked');
+                        } else {
+                            cell.addEventListener('click', () => selectAnt(x, y));
+                        }
+                    }
+
+                    if (previewCells.has(key) && !ants.has(key)) {
+                        cell.classList.add('preview');
+                    }
+
+                    grid.appendChild(cell);
+                }
+            }
+
+            document.getElementById('time').textContent = time;
+
+            const btnPrev = document.getElementById('btn-prev');
+            const btnNext = document.getElementById('btn-next');
+
+            btnPrev.disabled = historyIndex <= 0;
+
+            // 다음 버튼: 선택된 개미가 있거나, 히스토리에 저장된 선택이 있으면 활성화
+            const hasHistoryNext = historyIndex < history.length - 1 &&
+                                   history[historyIndex].selectedAnts.size > 0 &&
+                                   setsEqual(selectedAnts, history[historyIndex].selectedAnts);
+            btnNext.disabled = selectedAnts.size === 0 && !hasHistoryNext;
+
+            checkVictory();
+        }
+
+        function checkVictory() {
+            let yellowAntCount = 0;
+
+            for (const key of yellowRegion) {
+                if (ants.has(key)) {
+                    yellowAntCount++;
+                }
+            }
+
+            if (yellowAntCount === 0 && !victoryShown) {
+                victoryShown = true;
+                setTimeout(() => {
+                    document.getElementById('victory-time').textContent = time;
+                    document.getElementById('victory-overlay').classList.add('show');
+                }, 300);
+            }
+        }
+
+        function goNext() {
+            // 히스토리에 다음 상태가 있고, 현재 선택이 저장된 선택과 같으면 그냥 앞으로 이동
+            if (historyIndex < history.length - 1) {
+                const savedSelection = history[historyIndex].selectedAnts;
+                if (savedSelection.size > 0 && setsEqual(selectedAnts, savedSelection)) {
+                    historyIndex++;
+                    time = historyIndex;
+                    loadState(history[historyIndex]);
+                    render();
+                    return;
+                }
+            }
+
+            if (selectedAnts.size === 0) return;
+
+            const movingAnts = Array.from(selectedAnts);
+
+            // 현재 선택한 개미들을 히스토리에 저장
+            // 히스토리의 현재 위치 이후를 자르고 새 상태 추가
+            history = history.slice(0, historyIndex + 1);
+            history[historyIndex].selectedAnts = new Set(selectedAnts);
+
+            for (const antKey of movingAnts) {
+                ants.delete(antKey);
+            }
+
+            let maxX = 0;
+            let maxY = 0;
+
+            for (const antKey of ants) {
+                const pos = keyToPos(antKey);
+                maxX = Math.max(maxX, pos.x);
+                maxY = Math.max(maxY, pos.y);
+            }
+
+            for (const antKey of movingAnts) {
+                const { right, up } = getPreviewPositions(antKey);
+                ants.add(right);
+                ants.add(up);
+
+                const rightPos = keyToPos(right);
+                const upPos = keyToPos(up);
+
+                maxX = Math.max(maxX, rightPos.x, upPos.x);
+                maxY = Math.max(maxY, rightPos.y, upPos.y);
+            }
+
+            const neededSize = Math.max(maxX, maxY) + 2;
+            if (neededSize > gridSize) {
+                gridSize = neededSize;
+            }
+
+            time += movingAnts.length;
+            selectedAnts = new Set();
+            previewCells = new Set();
+
+            // 새 상태를 히스토리에 추가
+            history.push(saveState([]));
+            historyIndex = history.length - 1;
+
+            render();
+        }
+
+        function goPrev() {
+            if (historyIndex <= 0) return;
+
+            historyIndex--;
+            time = historyIndex;
+            loadState(history[historyIndex]);
+
+            render();
+        }
+
+        function showMessage(text, type = 'success') {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = `message ${type}`;
+            msg.style.display = 'block';
+            setTimeout(() => {
+                msg.style.display = 'none';
+            }, 1500);
+        }
+
+        function closeVictory() {
+            document.getElementById('victory-overlay').classList.remove('show');
+        }
+
+        document.getElementById('btn-prev').addEventListener('click', goPrev);
+        document.getElementById('btn-next').addEventListener('click', goNext);
+        document.getElementById('btn-reset').addEventListener('click', init);
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'KeyD') {
+                e.preventDefault();
+                goNext();
+            } else if (e.code === 'KeyA') {
+                e.preventDefault();
+                goPrev();
+            } else if (e.code === 'Escape') {
+                closeVictory();
+            } else if (e.code === 'KeyR') {
+                init();
+            }
+        });
+
+        init();
+    </script>
+</body>
+</html>

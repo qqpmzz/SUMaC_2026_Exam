@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SUMaC 문제 6 - 2×2 카드 덮기 시뮬레이션</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+
+        .stats {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .stat-item {
+            background: #f9f9f9;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        .stat-item strong {
+            color: #3498db;
+        }
+
+        .main-container {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .grid-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .grid-container {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(10, 30px);
+            grid-template-rows: repeat(10, 30px);
+            gap: 1px;
+            background: #999;
+            border: 2px solid #333;
+        }
+
+        .cell {
+            width: 30px;
+            height: 30px;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7em;
+            font-weight: bold;
+            color: #666;
+            position: relative;
+            cursor: crosshair;
+            transition: background 0.1s;
+        }
+
+        .cell:hover {
+            background: #e8f4fc;
+        }
+
+        .cell.covered {
+            background: #3498db;
+        }
+
+        .cell.covered-1 { background: #e74c3c; }
+        .cell.covered-2 { background: #27ae60; }
+        .cell.covered-3 { background: #9b59b6; }
+        .cell.covered-4 { background: #f39c12; }
+        .cell.covered-5 { background: #1abc9c; }
+        .cell.covered-6 { background: #e91e63; }
+        .cell.covered-7 { background: #00bcd4; }
+        .cell.covered-8 { background: #8bc34a; }
+        .cell.covered-9 { background: #ff5722; }
+        .cell.covered-10 { background: #607d8b; }
+
+        .cell.essential {
+            box-shadow: inset 0 0 0 2px gold;
+        }
+
+        .cell.preview {
+            background: rgba(52, 152, 219, 0.3) !important;
+        }
+
+        .cell .count {
+            font-size: 0.8em;
+            color: white;
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            font-size: 1em;
+            border: 1px solid #333;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: bold;
+            background: #fff;
+            color: #333;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: #333;
+            color: #fff;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn.active {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+
+        .btn.danger {
+            background: #e74c3c;
+            color: white;
+            border-color: #e74c3c;
+        }
+
+        .btn.danger:hover {
+            background: #c0392b;
+        }
+
+        .info-panel {
+            background: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            max-width: 300px;
+        }
+
+        .info-panel h3 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+            font-size: 1em;
+        }
+
+        .info-panel p {
+            font-size: 0.9em;
+            margin: 5px 0;
+            line-height: 1.5;
+        }
+
+        .info-panel .highlight {
+            background: #fff3cd;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+
+        .card-list {
+            background: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            max-width: 300px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .card-list h3 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+            font-size: 1em;
+        }
+
+        .card-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 10px;
+            margin: 3px 0;
+            border-radius: 5px;
+            font-size: 0.85em;
+        }
+
+        .card-item.essential {
+            background: #d4edda;
+            border: 1px solid #28a745;
+        }
+
+        .card-item.silly {
+            background: #f8d7da;
+            border: 1px solid #dc3545;
+        }
+
+        .card-item .remove-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 2px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+
+        .card-item .remove-btn:hover {
+            background: #c82333;
+        }
+
+        .analysis-result {
+            background: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            max-width: 300px;
+            margin-top: 10px;
+        }
+
+        .analysis-result h3 {
+            margin-bottom: 10px;
+            color: #27ae60;
+        }
+
+        .analysis-result .success {
+            color: #27ae60;
+        }
+
+        .analysis-result .fail {
+            color: #e74c3c;
+        }
+
+        .mode-indicator {
+            background: #3498db;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .legend {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+            font-size: 0.85em;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="stats">
+        <div class="stat-item">카드 수: <strong id="card-count">0</strong></div>
+        <div class="stat-item">덮인 셀: <strong id="covered-count">0</strong>/100</div>
+        <div class="stat-item">Essential: <strong id="essential-count">0</strong></div>
+        <div class="stat-item">Silly: <strong id="silly-count">0</strong></div>
+    </div>
+
+    <div class="main-container">
+        <div class="grid-panel">
+            <div class="mode-indicator" id="mode-indicator">클릭하여 카드 배치</div>
+
+            <div class="grid-container">
+                <div class="grid" id="grid"></div>
+            </div>
+
+            <div class="controls">
+                <button class="btn" id="btn-show-coverage">덮임 횟수 표시</button>
+                <button class="btn" id="btn-show-essential">Essential 표시</button>
+            </div>
+
+            <div class="controls">
+                <button class="btn danger" id="btn-clear">모두 지우기 (R)</button>
+                <button class="btn" id="btn-fill-25">25장 채우기</button>
+            </div>
+
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: gold; border: 1px solid #333;"></div>
+                    <span>Essential (필수)</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-panel-container">
+            <div class="info-panel">
+                <h3>사용 방법</h3>
+                <p>• 그리드 클릭: 2×2 카드 배치</p>
+                <p>• 카드는 겹칠 수 있습니다</p>
+                <p>• <span class="highlight">Essential</span>: 이 카드만 덮는 셀이 있음</p>
+                <p>• <span class="highlight">Silly</span>: 이 카드 없어도 모든 셀 덮임</p>
+                <p>• <strong>A+ Topper</strong>: 모든 카드가 Essential</p>
+            </div>
+
+            <div class="card-list">
+                <h3>배치된 카드 목록</h3>
+                <div id="card-list-content">
+                    <p style="color: #999;">카드가 없습니다</p>
+                </div>
+            </div>
+
+            <div class="analysis-result">
+                <h3>분석 결과</h3>
+                <p id="topper-result">카드를 배치해주세요.</p>
+                <p id="aplus-result"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const GRID_SIZE = 10;
+        let cards = []; // Each card: { id, row, col }
+        let cardIdCounter = 0;
+        let showCoverage = false;
+        let showEssential = false;
+
+        function initGrid() {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+
+            for (let row = 0; row < GRID_SIZE; row++) {
+                for (let col = 0; col < GRID_SIZE; col++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+
+                    cell.addEventListener('click', () => placeCard(row, col));
+                    cell.addEventListener('mouseenter', () => showPreview(row, col));
+                    cell.addEventListener('mouseleave', clearPreview);
+
+                    grid.appendChild(cell);
+                }
+            }
+        }
+
+        function getCell(row, col) {
+            return document.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
+        }
+
+        function canPlaceCard(row, col) {
+            return row < GRID_SIZE - 1 && col < GRID_SIZE - 1;
+        }
+
+        function getCardCells(row, col) {
+            return [
+                [row, col],
+                [row, col + 1],
+                [row + 1, col],
+                [row + 1, col + 1]
+            ];
+        }
+
+        function showPreview(row, col) {
+            if (!canPlaceCard(row, col)) return;
+
+            const cells = getCardCells(row, col);
+            cells.forEach(([r, c]) => {
+                const cell = getCell(r, c);
+                if (cell) cell.classList.add('preview');
+            });
+        }
+
+        function clearPreview() {
+            document.querySelectorAll('.cell.preview').forEach(cell => {
+                cell.classList.remove('preview');
+            });
+        }
+
+        function placeCard(row, col) {
+            if (!canPlaceCard(row, col)) return;
+
+            const card = {
+                id: ++cardIdCounter,
+                row: row,
+                col: col
+            };
+            cards.push(card);
+
+            render();
+        }
+
+        function removeCard(cardId) {
+            cards = cards.filter(c => c.id !== cardId);
+            render();
+        }
+
+        function getCoverageMap() {
+            const coverage = {};
+            for (let r = 0; r < GRID_SIZE; r++) {
+                for (let c = 0; c < GRID_SIZE; c++) {
+                    coverage[`${r},${c}`] = [];
+                }
+            }
+
+            cards.forEach(card => {
+                const cells = getCardCells(card.row, card.col);
+                cells.forEach(([r, c]) => {
+                    coverage[`${r},${c}`].push(card.id);
+                });
+            });
+
+            return coverage;
+        }
+
+        function isEssential(cardId, coverage) {
+            const card = cards.find(c => c.id === cardId);
+            if (!card) return false;
+
+            const cells = getCardCells(card.row, card.col);
+            return cells.some(([r, c]) => {
+                const covering = coverage[`${r},${c}`];
+                return covering.length === 1 && covering[0] === cardId;
+            });
+        }
+
+        function isSilly(cardId, coverage) {
+            const card = cards.find(c => c.id === cardId);
+            if (!card) return false;
+
+            const cells = getCardCells(card.row, card.col);
+            return cells.every(([r, c]) => {
+                const covering = coverage[`${r},${c}`];
+                return covering.length > 1;
+            });
+        }
+
+        function isTopper(coverage) {
+            for (let r = 0; r < GRID_SIZE; r++) {
+                for (let c = 0; c < GRID_SIZE; c++) {
+                    if (coverage[`${r},${c}`].length === 0) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        function render() {
+            const coverage = getCoverageMap();
+
+            // Update cells
+            for (let r = 0; r < GRID_SIZE; r++) {
+                for (let c = 0; c < GRID_SIZE; c++) {
+                    const cell = getCell(r, c);
+                    const covering = coverage[`${r},${c}`];
+
+                    cell.className = 'cell';
+                    cell.innerHTML = '';
+
+                    if (covering.length > 0) {
+                        const colorIndex = (covering[covering.length - 1] % 10) || 10;
+                        cell.classList.add(`covered-${colorIndex}`);
+
+                        if (showCoverage) {
+                            const countSpan = document.createElement('span');
+                            countSpan.className = 'count';
+                            countSpan.textContent = covering.length;
+                            cell.appendChild(countSpan);
+                        }
+
+                        if (showEssential && covering.length === 1) {
+                            cell.classList.add('essential');
+                        }
+                    }
+                }
+            }
+
+            // Update card list
+            const cardListContent = document.getElementById('card-list-content');
+            if (cards.length === 0) {
+                cardListContent.innerHTML = '<p style="color: #999;">카드가 없습니다</p>';
+            } else {
+                cardListContent.innerHTML = cards.map(card => {
+                    const essential = isEssential(card.id, coverage);
+                    const silly = isSilly(card.id, coverage);
+                    const className = essential ? 'essential' : (silly ? 'silly' : '');
+                    const status = essential ? '✓ Essential' : (silly ? '✗ Silly' : '');
+
+                    return `
+                        <div class="card-item ${className}">
+                            <span>#${card.id} (${card.row},${card.col}) ${status}</span>
+                            <button class="remove-btn" onclick="removeCard(${card.id})">×</button>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Update stats
+            document.getElementById('card-count').textContent = cards.length;
+
+            let coveredCount = 0;
+            let essentialCount = 0;
+            let sillyCount = 0;
+
+            for (let r = 0; r < GRID_SIZE; r++) {
+                for (let c = 0; c < GRID_SIZE; c++) {
+                    if (coverage[`${r},${c}`].length > 0) {
+                        coveredCount++;
+                    }
+                }
+            }
+
+            cards.forEach(card => {
+                if (isEssential(card.id, coverage)) essentialCount++;
+                if (isSilly(card.id, coverage)) sillyCount++;
+            });
+
+            document.getElementById('covered-count').textContent = coveredCount;
+            document.getElementById('essential-count').textContent = essentialCount;
+            document.getElementById('silly-count').textContent = sillyCount;
+
+            // Update analysis
+            const topperResult = document.getElementById('topper-result');
+            const aplusResult = document.getElementById('aplus-result');
+
+            if (cards.length === 0) {
+                topperResult.textContent = '카드를 배치해주세요.';
+                topperResult.className = '';
+                aplusResult.textContent = '';
+            } else if (isTopper(coverage)) {
+                topperResult.innerHTML = `<span class="success">✓ Topper: 모든 셀이 덮여 있습니다.</span>`;
+
+                if (essentialCount === cards.length) {
+                    aplusResult.innerHTML = `<span class="success">✓ A+ Topper: 모든 카드가 Essential입니다!</span>`;
+                } else if (sillyCount > 0) {
+                    aplusResult.innerHTML = `<span class="fail">✗ Silly 카드가 ${sillyCount}개 있습니다.</span>`;
+                } else {
+                    aplusResult.innerHTML = `<span class="fail">✗ A+ 아님: ${cards.length - essentialCount}개 카드가 Essential이 아닙니다.</span>`;
+                }
+            } else {
+                topperResult.innerHTML = `<span class="fail">✗ Not Topper: ${100 - coveredCount}개 셀이 덮이지 않았습니다.</span>`;
+                aplusResult.textContent = '';
+            }
+        }
+
+        function clearAll() {
+            cards = [];
+            cardIdCounter = 0;
+            render();
+        }
+
+        function fillWith25() {
+            clearAll();
+            // Place 25 non-overlapping cards in a 5x5 pattern
+            for (let i = 0; i < 5; i++) {
+                for (let j = 0; j < 5; j++) {
+                    const card = {
+                        id: ++cardIdCounter,
+                        row: i * 2,
+                        col: j * 2
+                    };
+                    cards.push(card);
+                }
+            }
+            render();
+        }
+
+        function toggleCoverage() {
+            showCoverage = !showCoverage;
+            document.getElementById('btn-show-coverage').classList.toggle('active', showCoverage);
+            render();
+        }
+
+        function toggleEssential() {
+            showEssential = !showEssential;
+            document.getElementById('btn-show-essential').classList.toggle('active', showEssential);
+            render();
+        }
+
+        // Event listeners
+        document.getElementById('btn-clear').addEventListener('click', clearAll);
+        document.getElementById('btn-fill-25').addEventListener('click', fillWith25);
+        document.getElementById('btn-show-coverage').addEventListener('click', toggleCoverage);
+        document.getElementById('btn-show-essential').addEventListener('click', toggleEssential);
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'KeyR' && !e.ctrlKey) {
+                e.preventDefault();
+                clearAll();
+            }
+        });
+
+        // Initialize
+        initGrid();
+        render();
+    </script>
+</body>
+</html>

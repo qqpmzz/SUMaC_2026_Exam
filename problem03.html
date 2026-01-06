@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SUMaC 문제 3 - 공 회전 퍼즐</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+
+        .move-display {
+            font-size: 2em;
+            margin-bottom: 15px;
+            color: #3498db;
+            font-weight: bold;
+        }
+
+        .main-container {
+            display: flex;
+            gap: 40px;
+            align-items: flex-start;
+        }
+
+        .panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .puzzle-container {
+            background: #f9f9f9;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .puzzle {
+            position: relative;
+            width: 250px;
+            height: 250px;
+        }
+
+        .ball {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2em;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            transition: left 0.4s ease, top 0.4s ease;
+            border: 3px solid rgba(0,0,0,0.3);
+            z-index: 10;
+        }
+
+        .ball.violet { background: #8e44ad; }
+        .ball.orange { background: #e67e22; }
+        .ball.red { background: #e74c3c; }
+        .ball.blue { background: #3498db; }
+        .ball.green { background: #27ae60; }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            font-size: 1em;
+            border: 1px solid #333;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: bold;
+            background: #fff;
+            color: #333;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: #333;
+            color: #fff;
+        }
+
+        .btn.active {
+            background: #333;
+            color: #fff;
+        }
+
+        .control-btn {
+            width: 140px;
+        }
+
+        .reset-btn {
+            width: 295px;
+        }
+
+        .problem-btn {
+            width: 140px;
+        }
+    </style>
+</head>
+<body>
+    <div class="move-display">이동 횟수: <span id="moves">0</span></div>
+
+    <div class="main-container">
+        <div class="panel">
+            <div class="puzzle-container">
+                <div class="puzzle" id="puzzle">
+                    <div class="ball violet" id="ball-V">V</div>
+                    <div class="ball orange" id="ball-O">O</div>
+                    <div class="ball red" id="ball-R">R</div>
+                    <div class="ball blue" id="ball-B">B</div>
+                    <div class="ball green" id="ball-G">G</div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="btn control-btn" id="btn-track-ccw">트랙 반시계 (Q)</button>
+                <button class="btn control-btn" id="btn-track-cw">트랙 시계 (E)</button>
+            </div>
+            <div class="controls">
+                <button class="btn control-btn" id="btn-circle-ccw">원 반시계 (A)</button>
+                <button class="btn control-btn" id="btn-circle-cw">원 시계 (D)</button>
+            </div>
+            <div class="controls">
+                <button class="btn reset-btn" id="btn-reset">초기화 (R)</button>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="puzzle-container">
+                <div class="puzzle" id="target-puzzle">
+                    <div class="ball violet" id="target-V" style="left: 0px; top: 0px;">V</div>
+                    <div class="ball orange" id="target-O" style="left: 100px; top: 100px;">O</div>
+                    <div class="ball red" id="target-R" style="left: 200px; top: 0px;">R</div>
+                    <div class="ball blue" id="target-B" style="left: 0px; top: 200px;">B</div>
+                    <div class="ball green" id="target-G" style="left: 200px; top: 200px;">G</div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="btn problem-btn" id="btn-prob-a">문제 (a)</button>
+                <button class="btn problem-btn" id="btn-prob-b">문제 (b)</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 모래시계 형태:
+        // V     R   (위쪽)
+        //    O      (중앙)
+        // B     G   (아래쪽)
+
+        const positions = {
+            topLeft: { left: 0, top: 0 },
+            topRight: { left: 200, top: 0 },
+            center: { left: 100, top: 100 },
+            bottomLeft: { left: 0, top: 200 },
+            bottomRight: { left: 200, top: 200 }
+        };
+
+        // 문제별 목표 상태
+        const problemConfigs = {
+            start: {
+                topLeft: 'V',
+                topRight: 'R',
+                center: 'O',
+                bottomLeft: 'B',
+                bottomRight: 'G'
+            },
+            a: {
+                topLeft: 'R',
+                topRight: 'V',
+                center: 'O',
+                bottomLeft: 'G',
+                bottomRight: 'B'
+            },
+            b: {
+                topLeft: 'V',
+                topRight: 'R',
+                center: 'O',
+                bottomLeft: 'G',
+                bottomRight: 'B'
+            }
+        };
+
+        let state = {};
+        let moves = 0;
+        let isAnimating = false;
+        let currentProblem = 'start';
+
+        function init() {
+            state = {
+                topLeft: 'V',
+                topRight: 'R',
+                center: 'O',
+                bottomLeft: 'B',
+                bottomRight: 'G'
+            };
+            moves = 0;
+            isAnimating = false;
+            render();
+        }
+
+        function rotateCircleCW() {
+            if (isAnimating) return;
+            const temp = state.center;
+            state.center = state.bottomLeft;
+            state.bottomLeft = state.bottomRight;
+            state.bottomRight = temp;
+            addMove();
+        }
+
+        function rotateCircleCCW() {
+            if (isAnimating) return;
+            const temp = state.center;
+            state.center = state.bottomRight;
+            state.bottomRight = state.bottomLeft;
+            state.bottomLeft = temp;
+            addMove();
+        }
+
+        function rotateTrackCW() {
+            if (isAnimating) return;
+            const temp = state.topLeft;
+            state.topLeft = state.center;
+            state.center = state.topRight;
+            state.topRight = temp;
+            addMove();
+        }
+
+        function rotateTrackCCW() {
+            if (isAnimating) return;
+            const temp = state.topLeft;
+            state.topLeft = state.topRight;
+            state.topRight = state.center;
+            state.center = temp;
+            addMove();
+        }
+
+        function addMove() {
+            moves++;
+            render();
+        }
+
+        function render() {
+            isAnimating = true;
+
+            for (const [posKey, ballId] of Object.entries(state)) {
+                const ball = document.getElementById(`ball-${ballId}`);
+                const pos = positions[posKey];
+                ball.style.left = pos.left + 'px';
+                ball.style.top = pos.top + 'px';
+            }
+
+            document.getElementById('moves').textContent = moves;
+
+            setTimeout(() => {
+                isAnimating = false;
+            }, 400);
+        }
+
+        function renderTarget(problemKey) {
+            const config = problemConfigs[problemKey];
+            for (const [posKey, ballId] of Object.entries(config)) {
+                const ball = document.getElementById(`target-${ballId}`);
+                const pos = positions[posKey];
+                ball.style.left = pos.left + 'px';
+                ball.style.top = pos.top + 'px';
+            }
+        }
+
+        function selectProblem(problemKey) {
+            currentProblem = problemKey;
+            renderTarget(problemKey);
+
+            // 버튼 active 상태 업데이트
+            document.getElementById('btn-prob-a').classList.remove('active');
+            document.getElementById('btn-prob-b').classList.remove('active');
+
+            if (problemKey === 'a') {
+                document.getElementById('btn-prob-a').classList.add('active');
+            } else if (problemKey === 'b') {
+                document.getElementById('btn-prob-b').classList.add('active');
+            }
+        }
+
+        // 이벤트 리스너
+        document.getElementById('btn-track-ccw').addEventListener('click', rotateTrackCCW);
+        document.getElementById('btn-track-cw').addEventListener('click', rotateTrackCW);
+        document.getElementById('btn-circle-ccw').addEventListener('click', rotateCircleCCW);
+        document.getElementById('btn-circle-cw').addEventListener('click', rotateCircleCW);
+        document.getElementById('btn-reset').addEventListener('click', init);
+
+        document.getElementById('btn-prob-a').addEventListener('click', () => selectProblem('a'));
+        document.getElementById('btn-prob-b').addEventListener('click', () => selectProblem('b'));
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'KeyQ') {
+                e.preventDefault();
+                rotateTrackCCW();
+            } else if (e.code === 'KeyE') {
+                e.preventDefault();
+                rotateTrackCW();
+            } else if (e.code === 'KeyA') {
+                e.preventDefault();
+                rotateCircleCCW();
+            } else if (e.code === 'KeyD') {
+                e.preventDefault();
+                rotateCircleCW();
+            } else if (e.code === 'KeyR') {
+                e.preventDefault();
+                init();
+            }
+        });
+
+        init();
+        renderTarget('start');
+    </script>
+</body>
+</html>
