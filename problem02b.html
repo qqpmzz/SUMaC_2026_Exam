@@ -274,7 +274,7 @@
     </style>
 </head>
 <body>
-    <div class="move-display">이동 횟수: <span id="moves">0</span></div>
+    <div class="move-display"><span id="move-label">이동 횟수</span>: <span id="moves">0</span></div>
 
     <div class="table-container">
         <div class="table" id="table">
@@ -285,11 +285,11 @@
     <div class="legend">
         <div class="legend-item">
             <div class="legend-color you"></div>
-            <span>나 (2개)</span>
+            <span id="legend-you">나 (2개)</span>
         </div>
         <div class="legend-item">
             <div class="legend-color friend"></div>
-            <span>친구 (2개)</span>
+            <span id="legend-friend">친구 (2개)</span>
         </div>
     </div>
 
@@ -467,7 +467,8 @@
                 cup.classList.add('selected');
             }
 
-            setStatusMessage(`선택됨: ${selectedCups.length}/4개`);
+            const t = translations[currentLang];
+            setStatusMessage(`${t.selected} ${selectedCups.length}${t.selectOf}`);
         }
 
         // 전체 8개 보기
@@ -544,7 +545,7 @@
                 if (selectedCups.length === 4) {
                     confirmCustomSelect();
                 } else {
-                    setStatusMessage('4개를 선택해주세요!');
+                    setStatusMessage(translations[currentLang].pleaseSelect4);
                 }
             } else {
                 // 선택 모드 진입
@@ -560,8 +561,8 @@
             clearHighlights();
             clearActiveButtons();
             document.getElementById('btn-view-custom').classList.add('active', 'select-mode');
-            document.getElementById('btn-view-custom').textContent = '확인';
-            setStatusMessage('4개의 컵을 클릭하여 선택하세요 (선택됨: 0/4개)');
+            document.getElementById('btn-view-custom').textContent = translations[currentLang].confirm;
+            setStatusMessage(translations[currentLang].selectPrompt);
             updateCupsSelectable(true);
             render();
             updateSpinButton();
@@ -570,7 +571,7 @@
         function exitSelectMode() {
             isSelectMode = false;
             selectedCups = [];
-            document.getElementById('btn-view-custom').textContent = '직접선택';
+            document.getElementById('btn-view-custom').textContent = translations[currentLang].viewCustom;
             document.getElementById('btn-view-custom').classList.remove('select-mode');
             setStatusMessage('');
             updateCupsSelectable(false);
@@ -590,7 +591,7 @@
             highlightCups([selectedCups[0], selectedCups[1]], 'highlight-you');
             highlightCups([selectedCups[2], selectedCups[3]], 'highlight-friend');
 
-            document.getElementById('btn-view-custom').textContent = '직접선택';
+            document.getElementById('btn-view-custom').textContent = translations[currentLang].viewCustom;
             document.getElementById('btn-view-custom').classList.remove('select-mode');
             setStatusMessage('');
             updateCupsSelectable(false);
@@ -694,9 +695,107 @@
             }
         });
 
+        // 언어 지원
+        const translations = {
+            en: {
+                moveLabel: 'Moves',
+                legendYou: 'You (2)',
+                legendFriend: 'Friend (2)',
+                viewAll: 'View All',
+                viewAdjacent: 'Adjacent',
+                viewOpposite: 'Opposite',
+                viewCustom: 'Custom',
+                confirm: 'Confirm',
+                spin: 'Spin (R)',
+                reset: 'Reset',
+                congrats: 'Congratulations!',
+                winMsg: 'All coins are now the same!',
+                winMoves: 'You succeeded in',
+                winMovesEnd: 'moves.',
+                playAgain: 'Play Again',
+                selectPrompt: 'Click 4 cups to select (Selected: 0/4)',
+                selected: 'Selected:',
+                selectOf: '/4',
+                pleaseSelect4: 'Please select 4 cups!'
+            },
+            kr: {
+                moveLabel: '이동 횟수',
+                legendYou: '나 (2개)',
+                legendFriend: '친구 (2개)',
+                viewAll: '전체보기',
+                viewAdjacent: '인접보기',
+                viewOpposite: '마주보기',
+                viewCustom: '직접선택',
+                confirm: '확인',
+                spin: '돌리기 (R)',
+                reset: '초기화',
+                congrats: '축하합니다!',
+                winMsg: '모든 동전을 같은 색으로 만들었습니다!',
+                winMoves: '총',
+                winMovesEnd: '번의 이동으로 성공했습니다.',
+                playAgain: '다시 하기',
+                selectPrompt: '4개의 컵을 클릭하여 선택하세요 (선택됨: 0/4개)',
+                selected: '선택됨:',
+                selectOf: '/4개',
+                pleaseSelect4: '4개를 선택해주세요!'
+            }
+        };
+
+        let currentLang = 'kr';
+
+        function updateLanguageTexts() {
+            const t = translations[currentLang];
+
+            document.getElementById('move-label').textContent = t.moveLabel;
+            document.getElementById('legend-you').textContent = t.legendYou;
+            document.getElementById('legend-friend').textContent = t.legendFriend;
+            document.getElementById('btn-view-all').textContent = t.viewAll;
+            document.getElementById('btn-view-adjacent').textContent = t.viewAdjacent;
+            document.getElementById('btn-view-opposite').textContent = t.viewOpposite;
+
+            // 직접선택 버튼은 상태에 따라 다르게
+            if (!isSelectMode) {
+                document.getElementById('btn-view-custom').textContent = t.viewCustom;
+            } else {
+                document.getElementById('btn-view-custom').textContent = t.confirm;
+            }
+
+            document.getElementById('btn-spin').textContent = t.spin;
+            document.getElementById('btn-reset').textContent = t.reset;
+
+            // 승리 메시지
+            document.querySelector('.win-message h2').textContent = t.congrats;
+            document.querySelector('.win-message p:nth-child(2)').textContent = t.winMsg;
+
+            const movesText = document.querySelector('.win-message p:nth-child(3)');
+            const finalMoves = document.getElementById('final-moves').textContent;
+            movesText.innerHTML = `${t.winMoves} <span id="final-moves">${finalMoves}</span> ${t.winMovesEnd}`;
+
+            document.querySelector('.win-message button').textContent = t.playAgain;
+        }
+
+        function setLang(lang) {
+            currentLang = lang;
+            updateLanguageTexts();
+        }
+
+        // 부모 창에서 언어 변경 메시지 수신
+        window.addEventListener('message', (e) => {
+            if (e.data && e.data.type === 'setLang') {
+                setLang(e.data.lang);
+            }
+        });
+
+        // localStorage에서 언어 설정 읽기
+        const savedLang = localStorage.getItem('sumac-lang');
+        if (savedLang) {
+            currentLang = savedLang;
+        }
+
         // 초기화
         createCups();
         init();
+        updateLanguageTexts();
     </script>
 </body>
 </html>

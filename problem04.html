@@ -442,7 +442,7 @@
             <!-- 왼쪽: 상세 보기 -->
             <div class="detail-panel">
                 <div class="detail-header">
-                    <span class="detail-header-title">시작 상태:</span>
+                    <span class="detail-header-title" id="start-state-label">시작 상태:</span>
                     <div class="start-selector">
                         <div class="color-toggle">
                             <button class="color-btn red-btn active" id="btn-red" onclick="setColor(true)">빨강</button>
@@ -458,11 +458,11 @@
 
                 <div class="paths-container">
                     <div class="path-box path1">
-                        <div class="path-box-header">경로 1: Toggle → Crank</div>
+                        <div class="path-box-header" id="path1-header">경로 1: Toggle → Crank</div>
                         <div class="path-steps" id="detail-path1"></div>
                     </div>
                     <div class="path-box path2">
-                        <div class="path-box-header">경로 2: Crank<sup id="k-sup-detail">1</sup> → Toggle</div>
+                        <div class="path-box-header" id="path2-header">경로 2: Crank<sup id="k-sup-detail">1</sup> → Toggle</div>
                         <div class="path-steps" id="detail-path2"></div>
                     </div>
                 </div>
@@ -473,7 +473,7 @@
             <!-- 오른쪽: 전체 결과 -->
             <div class="results-panel">
                 <div class="results-header" onclick="toggleResultsTable()">
-                    <h3>Special 조건: (Toggle → Crank) = (Crank<sup id="k-sup">1</sup> → Toggle)</h3>
+                    <h3 id="special-header">Special 조건: (Toggle → Crank) = (Crank<sup id="k-sup">1</sup> → Toggle)</h3>
                     <div class="results-header-right">
                         <span class="results-summary" id="results-summary">로딩중...</span>
                         <span class="toggle-arrow" id="toggle-arrow">▼</span>
@@ -483,7 +483,7 @@
                     <table class="results-table">
                         <thead>
                             <tr>
-                                <th>시작</th>
+                                <th id="th-start">시작</th>
                                 <th>T→C</th>
                                 <th>C<sup id="k-sup-th">1</sup>→T</th>
                                 <th></th>
@@ -639,24 +639,25 @@
 
         // 시뮬레이션
         function simulate(startRed, startNum) {
+            const t = translations[currentLang];
             const path1 = [];
             const path2 = [];
 
             // 경로 1: Toggle → Crank
             let red1 = startRed, num1 = startNum;
-            path1.push({ red: red1, num: num1, label: '시작' });
+            path1.push({ red: red1, num: num1, label: t.start });
             red1 = !red1;
-            path1.push({ red: red1, num: num1, label: '토글' });
+            path1.push({ red: red1, num: num1, label: t.toggle });
             if (red1) {
                 num1 = (num1 % p) + 1;
             } else {
                 num1 = ((num1 + k - 1) % p) + 1;
             }
-            path1.push({ red: red1, num: num1, label: '크랭크' });
+            path1.push({ red: red1, num: num1, label: t.crank });
 
             // 경로 2: Crank^k → Toggle
             let red2 = startRed, num2 = startNum;
-            path2.push({ red: red2, num: num2, label: '시작' });
+            path2.push({ red: red2, num: num2, label: t.start });
             // 시작 상태 직후에 현재 숫자도 표시
             for (let i = 0; i < k; i++) {
                 if (red2) {
@@ -664,10 +665,10 @@
                 } else {
                     num2 = ((num2 + k - 1) % p) + 1;
                 }
-                path2.push({ red: red2, num: num2, label: k > 1 ? `C${i+1}` : '크랭크' });
+                path2.push({ red: red2, num: num2, label: k > 1 ? `C${i+1}` : t.crank });
             }
             red2 = !red2;
-            path2.push({ red: red2, num: num2, label: '토글' });
+            path2.push({ red: red2, num: num2, label: t.toggle });
 
             return {
                 startRed, startNum, path1, path2,
@@ -736,6 +737,7 @@
         }
 
         function updateDetailView() {
+            const t = translations[currentLang];
             const result = simulate(selectedRed, selectedNum);
 
             // 경로 1 표시
@@ -756,10 +758,10 @@
             const r2 = result.result2;
             if (result.match) {
                 resultEl.className = 'detail-result match';
-                resultEl.innerHTML = `✓ 일치: ${createStateChip(r1.red, r1.num)}`;
+                resultEl.innerHTML = `${t.match} ${createStateChip(r1.red, r1.num)}`;
             } else {
                 resultEl.className = 'detail-result no-match';
-                resultEl.innerHTML = `✗ 불일치: ${createStateChip(r1.red, r1.num)} ≠ ${createStateChip(r2.red, r2.num)}`;
+                resultEl.innerHTML = `${t.noMatch} ${createStateChip(r1.red, r1.num)} ≠ ${createStateChip(r2.red, r2.num)}`;
             }
         }
 
@@ -787,7 +789,81 @@
             arrow.classList.toggle('collapsed');
         }
 
+        // 언어 지원
+        const translations = {
+            en: {
+                startState: 'Start State:',
+                red: 'Red',
+                black: 'Black',
+                path1: 'Path 1: Toggle → Crank',
+                path2Pre: 'Path 2: Crank',
+                path2Post: ' → Toggle',
+                specialCondition: 'Special Condition: (Toggle → Crank) = (Crank',
+                specialConditionPost: ' → Toggle)',
+                loading: 'Loading...',
+                start: 'Start',
+                toggle: 'Toggle',
+                crank: 'Crank',
+                match: '✓ Match:',
+                noMatch: '✗ Mismatch:',
+                thStart: 'Start'
+            },
+            kr: {
+                startState: '시작 상태:',
+                red: '빨강',
+                black: '검정',
+                path1: '경로 1: Toggle → Crank',
+                path2Pre: '경로 2: Crank',
+                path2Post: ' → Toggle',
+                specialCondition: 'Special 조건: (Toggle → Crank) = (Crank',
+                specialConditionPost: ' → Toggle)',
+                loading: '로딩중...',
+                start: '시작',
+                toggle: '토글',
+                crank: '크랭크',
+                match: '✓ 일치:',
+                noMatch: '✗ 불일치:',
+                thStart: '시작'
+            }
+        };
+
+        let currentLang = 'kr';
+
+        function updateLanguageTexts() {
+            const t = translations[currentLang];
+
+            document.getElementById('start-state-label').textContent = t.startState;
+            document.getElementById('btn-red').textContent = t.red;
+            document.getElementById('btn-black').textContent = t.black;
+            document.getElementById('path1-header').textContent = t.path1;
+            document.getElementById('path2-header').innerHTML = t.path2Pre + '<sup id="k-sup-detail">' + k + '</sup>' + t.path2Post;
+            document.getElementById('special-header').innerHTML = t.specialCondition + '<sup id="k-sup">' + k + '</sup>' + t.specialConditionPost;
+            document.getElementById('th-start').textContent = t.thStart;
+
+            // Re-run detail view to update labels
+            updateDetailView();
+        }
+
+        function setLang(lang) {
+            currentLang = lang;
+            updateLanguageTexts();
+        }
+
+        // 부모 창에서 언어 변경 메시지 수신
+        window.addEventListener('message', (e) => {
+            if (e.data && e.data.type === 'setLang') {
+                setLang(e.data.lang);
+            }
+        });
+
+        // localStorage에서 언어 설정 읽기
+        const savedLang = localStorage.getItem('sumac-lang');
+        if (savedLang) {
+            currentLang = savedLang;
+        }
+
         init();
+        updateLanguageTexts();
     </script>
 </body>
 </html>

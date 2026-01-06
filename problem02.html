@@ -207,7 +207,7 @@
     </style>
 </head>
 <body>
-    <div class="move-display">이동 횟수: <span id="moves">0</span></div>
+    <div class="move-display"><span id="move-label">이동 횟수</span>: <span id="moves">0</span></div>
 
     <div class="table-container">
         <div class="table" id="table">
@@ -475,6 +475,73 @@
                 }
             }
         });
+
+        // 언어 지원
+        const translations = {
+            en: {
+                moveLabel: 'Moves',
+                viewAll: 'View All',
+                viewAdjacent: 'Adjacent',
+                viewDiag: 'Diagonal',
+                spin: 'Spin (R)',
+                reset: 'Reset',
+                congrats: 'Congratulations!',
+                winMsg: 'All coins are now the same!',
+                winMoves: 'You succeeded in',
+                winMovesEnd: 'moves.',
+                playAgain: 'Play Again'
+            },
+            kr: {
+                moveLabel: '이동 횟수',
+                viewAll: '전체보기',
+                viewAdjacent: '인접보기',
+                viewDiag: '대각선보기',
+                spin: '돌리기 (R)',
+                reset: '초기화',
+                congrats: '축하합니다!',
+                winMsg: '모든 동전을 같은 색으로 만들었습니다!',
+                winMoves: '총',
+                winMovesEnd: '번의 이동으로 성공했습니다.',
+                playAgain: '다시 하기'
+            }
+        };
+
+        let currentLang = 'kr';
+
+        function setLang(lang) {
+            currentLang = lang;
+            const t = translations[lang];
+
+            document.getElementById('move-label').textContent = t.moveLabel;
+            document.getElementById('btn-view-all').textContent = t.viewAll;
+            document.getElementById('btn-view-row').textContent = t.viewAdjacent;
+            document.getElementById('btn-view-diag').textContent = t.viewDiag;
+            document.getElementById('btn-spin').textContent = t.spin;
+            document.getElementById('btn-reset').textContent = t.reset;
+
+            // 승리 메시지 업데이트
+            document.querySelector('.win-message h2').textContent = t.congrats;
+            document.querySelector('.win-message p:nth-child(2)').textContent = t.winMsg;
+
+            const movesText = document.querySelector('.win-message p:nth-child(3)');
+            const finalMoves = document.getElementById('final-moves').textContent;
+            movesText.innerHTML = `${t.winMoves} <span id="final-moves">${finalMoves}</span> ${t.winMovesEnd}`;
+
+            document.querySelector('.win-message button').textContent = t.playAgain;
+        }
+
+        // 부모 창에서 언어 변경 메시지 수신
+        window.addEventListener('message', (e) => {
+            if (e.data && e.data.type === 'setLang') {
+                setLang(e.data.lang);
+            }
+        });
+
+        // localStorage에서 언어 설정 읽기
+        const savedLang = localStorage.getItem('sumac-lang');
+        if (savedLang) {
+            setLang(savedLang);
+        }
 
         init();
     </script>

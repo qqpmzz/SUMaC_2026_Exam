@@ -244,9 +244,9 @@
     <div class="message" id="message"></div>
 
     <div class="victory-overlay" id="victory-overlay">
-        <div class="victory-text">목표 달성!</div>
-        <div class="victory-subtext">노란 영역이 비워졌습니다! (t = <span id="victory-time">0</span>)</div>
-        <button class="btn-reset" onclick="closeVictory()">계속하기</button>
+        <div class="victory-text" id="victory-title">목표 달성!</div>
+        <div class="victory-subtext"><span id="victory-msg">노란 영역이 비워졌습니다!</span> (t = <span id="victory-time">0</span>)</div>
+        <button class="btn-reset" id="victory-continue" onclick="closeVictory()">계속하기</button>
     </div>
 
     <script>
@@ -360,7 +360,7 @@
             }
 
             if (!canSelectAnt(key)) {
-                showMessage('이동 위치가 막혀있어 선택할 수 없습니다!', 'info');
+                showMessage(translations[currentLang].blockedMsg, 'info');
                 return;
             }
 
@@ -556,7 +556,58 @@
             }
         });
 
+        // 언어 지원
+        const translations = {
+            en: {
+                prev: 'Prev (A)',
+                next: 'Next (D)',
+                reset: 'Reset (R)',
+                victoryTitle: 'Goal Achieved!',
+                victoryMsg: 'Yellow region is now empty!',
+                continue: 'Continue',
+                blockedMsg: 'Selected ant cannot move there!'
+            },
+            kr: {
+                prev: '이전 (A)',
+                next: '다음 (D)',
+                reset: '초기화 (R)',
+                victoryTitle: '목표 달성!',
+                victoryMsg: '노란 영역이 비워졌습니다!',
+                continue: '계속하기',
+                blockedMsg: '이동 위치가 막혀있어 선택할 수 없습니다!'
+            }
+        };
+
+        let currentLang = 'kr';
+
+        function updateLanguageTexts() {
+            const t = translations[currentLang];
+            document.getElementById('btn-prev').textContent = t.prev;
+            document.getElementById('btn-next').textContent = t.next;
+            document.getElementById('btn-reset').textContent = t.reset;
+            document.getElementById('victory-title').textContent = t.victoryTitle;
+            document.getElementById('victory-msg').textContent = t.victoryMsg;
+            document.getElementById('victory-continue').textContent = t.continue;
+        }
+
+        function setLang(lang) {
+            currentLang = lang;
+            updateLanguageTexts();
+        }
+
+        window.addEventListener('message', (e) => {
+            if (e.data && e.data.type === 'setLang') {
+                setLang(e.data.lang);
+            }
+        });
+
+        const savedLang = localStorage.getItem('sumac-lang');
+        if (savedLang) {
+            currentLang = savedLang;
+        }
+
         init();
+        updateLanguageTexts();
     </script>
 </body>
 </html>

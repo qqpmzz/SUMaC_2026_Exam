@@ -122,7 +122,7 @@
     </style>
 </head>
 <body>
-    <div class="move-display">이동 횟수: <span id="moves">0</span></div>
+    <div class="move-display"><span id="move-label">이동 횟수</span>: <span id="moves">0</span></div>
 
     <div class="main-container">
         <div class="panel">
@@ -336,8 +336,63 @@
             }
         });
 
+        // 언어 지원
+        const translations = {
+            en: {
+                moveLabel: 'Moves',
+                trackCCW: 'Track CCW (Q)',
+                trackCW: 'Track CW (E)',
+                circleCCW: 'Circle CCW (A)',
+                circleCW: 'Circle CW (D)',
+                reset: 'Reset (R)',
+                probA: 'Problem (a)',
+                probB: 'Problem (b)'
+            },
+            kr: {
+                moveLabel: '이동 횟수',
+                trackCCW: '트랙 반시계 (Q)',
+                trackCW: '트랙 시계 (E)',
+                circleCCW: '원 반시계 (A)',
+                circleCW: '원 시계 (D)',
+                reset: '초기화 (R)',
+                probA: '문제 (a)',
+                probB: '문제 (b)'
+            }
+        };
+
+        let currentLang = 'kr';
+
+        function updateLanguageTexts() {
+            const t = translations[currentLang];
+            document.getElementById('move-label').textContent = t.moveLabel;
+            document.getElementById('btn-track-ccw').textContent = t.trackCCW;
+            document.getElementById('btn-track-cw').textContent = t.trackCW;
+            document.getElementById('btn-circle-ccw').textContent = t.circleCCW;
+            document.getElementById('btn-circle-cw').textContent = t.circleCW;
+            document.getElementById('btn-reset').textContent = t.reset;
+            document.getElementById('btn-prob-a').textContent = t.probA;
+            document.getElementById('btn-prob-b').textContent = t.probB;
+        }
+
+        function setLang(lang) {
+            currentLang = lang;
+            updateLanguageTexts();
+        }
+
+        window.addEventListener('message', (e) => {
+            if (e.data && e.data.type === 'setLang') {
+                setLang(e.data.lang);
+            }
+        });
+
+        const savedLang = localStorage.getItem('sumac-lang');
+        if (savedLang) {
+            currentLang = savedLang;
+        }
+
         init();
         renderTarget('start');
+        updateLanguageTexts();
     </script>
 </body>
 </html>

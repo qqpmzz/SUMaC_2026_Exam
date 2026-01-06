@@ -1841,6 +1841,9 @@ k² ≡ 1 (mod p)</pre>
         function setLang(lang) {
             currentLang = lang;
 
+            // localStorage에 저장 (iframe과 공유)
+            localStorage.setItem('sumac-lang', lang);
+
             // 버튼 상태 업데이트
             document.getElementById('btn-en').classList.remove('active');
             document.getElementById('btn-kr').classList.remove('active');
@@ -1849,32 +1852,31 @@ k² ≡ 1 (mod p)</pre>
             // UI 텍스트 업데이트
             updateUIText();
 
-            // 현재 표시된 문제 설명 업데이트
-            const descContainer = document.getElementById('problem-description');
-            if (descContainer.classList.contains('show')) {
-                const currentNum = getCurrentProblemNum();
-                if (currentNum && problemDescriptions[currentNum]) {
-                    document.getElementById('problem-title').textContent = problemDescriptions[currentNum][currentLang].title;
-                    document.getElementById('problem-content').innerHTML = problemDescriptions[currentNum][currentLang].content;
-                }
+            // 현재 문제 설명 업데이트 (show 여부와 관계없이)
+            const currentNum = getCurrentProblemNum();
+            if (currentNum && problemDescriptions[currentNum]) {
+                document.getElementById('problem-title').textContent = problemDescriptions[currentNum][currentLang].title;
+                document.getElementById('problem-content').innerHTML = problemDescriptions[currentNum][currentLang].content;
             }
 
-            // 현재 표시된 해설 업데이트
-            const solutionContainer = document.getElementById('solution-section');
-            if (solutionContainer.classList.contains('show')) {
-                const currentNum = getCurrentProblemNum();
-                if (currentNum === 2) {
-                    // Problem 2: 현재 선택된 해설 키 확인
-                    const activeBtn = document.querySelector('#solution-selector .subproblem-btn.active');
-                    const solKey = activeBtn ? activeBtn.id.replace('btn-sol-', '') : '2a';
-                    if (problemSolutions[solKey]) {
-                        document.getElementById('solution-title').textContent = problemSolutions[solKey][currentLang].title;
-                        document.getElementById('solution-content').innerHTML = problemSolutions[solKey][currentLang].content;
-                    }
-                } else if (currentNum && problemSolutions[currentNum]) {
-                    document.getElementById('solution-title').textContent = problemSolutions[currentNum][currentLang].title;
-                    document.getElementById('solution-content').innerHTML = problemSolutions[currentNum][currentLang].content;
+            // 현재 해설 업데이트 (show 여부와 관계없이)
+            if (currentNum === 2) {
+                // Problem 2: 현재 선택된 해설 키 확인
+                const activeBtn = document.querySelector('#solution-selector .subproblem-btn.active');
+                const solKey = activeBtn ? activeBtn.id.replace('btn-sol-', '') : '2a';
+                if (problemSolutions[solKey]) {
+                    document.getElementById('solution-title').textContent = problemSolutions[solKey][currentLang].title;
+                    document.getElementById('solution-content').innerHTML = problemSolutions[solKey][currentLang].content;
                 }
+            } else if (currentNum && problemSolutions[currentNum]) {
+                document.getElementById('solution-title').textContent = problemSolutions[currentNum][currentLang].title;
+                document.getElementById('solution-content').innerHTML = problemSolutions[currentNum][currentLang].content;
+            }
+
+            // iframe에 언어 변경 알림
+            const iframe = document.getElementById('problem-iframe');
+            if (iframe && iframe.contentWindow) {
+                iframe.contentWindow.postMessage({ type: 'setLang', lang: lang }, '*');
             }
         }
 
