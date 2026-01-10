@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SUMaC 문제 6 - 2×2 카드 덮기 시뮬레이션</title>
+    <title>SUMaC 문제 6 - A+ Topper 시뮬레이션</title>
     <style>
         * {
             margin: 0;
@@ -22,16 +22,50 @@
             color: #333;
         }
 
+        h1 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        .size-control {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            background: #f0f0f0;
+            padding: 10px 20px;
+            border-radius: 8px;
+        }
+
+        .size-control label {
+            font-weight: bold;
+        }
+
+        .size-control input[type="range"] {
+            width: 150px;
+            cursor: pointer;
+        }
+
+        .size-control .size-display {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #3498db;
+            min-width: 60px;
+        }
+
         .stats {
             display: flex;
-            gap: 30px;
+            gap: 20px;
             margin-bottom: 15px;
-            font-size: 1.1em;
+            font-size: 1em;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
         .stat-item {
             background: #f9f9f9;
-            padding: 10px 20px;
+            padding: 8px 15px;
             border-radius: 8px;
             border: 1px solid #ddd;
         }
@@ -42,7 +76,7 @@
 
         .main-container {
             display: flex;
-            gap: 30px;
+            gap: 25px;
             align-items: flex-start;
             flex-wrap: wrap;
             justify-content: center;
@@ -56,7 +90,7 @@
 
         .grid-container {
             background: #f9f9f9;
-            padding: 20px;
+            padding: 15px;
             border-radius: 15px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             margin-bottom: 15px;
@@ -64,21 +98,19 @@
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(10, 30px);
-            grid-template-rows: repeat(10, 30px);
             gap: 1px;
             background: #999;
             border: 2px solid #333;
         }
 
         .cell {
-            width: 30px;
-            height: 30px;
+            width: 35px;
+            height: 35px;
             background: #fff;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.7em;
+            font-size: 0.75em;
             font-weight: bold;
             color: #666;
             position: relative;
@@ -88,10 +120,6 @@
 
         .cell:hover {
             background: #e8f4fc;
-        }
-
-        .cell.covered {
-            background: #3498db;
         }
 
         .cell.covered-1 { background: #e74c3c; }
@@ -105,31 +133,60 @@
         .cell.covered-9 { background: #ff5722; }
         .cell.covered-10 { background: #607d8b; }
 
-        .cell.essential {
-            box-shadow: inset 0 0 0 2px gold;
+        .cell.essential-cell {
+            box-shadow: inset 0 0 0 3px gold;
+        }
+
+        .cell.silly-card-cell {
+            box-shadow: inset 0 0 0 3px #dc3545;
+        }
+
+        .cell.silly-card-corner {
+            cursor: pointer;
+            position: relative;
+        }
+
+        .cell.silly-card-corner::after {
+            content: '×';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5em;
+            color: white;
+            text-shadow: 0 0 3px #000, 0 0 3px #000;
+            pointer-events: none;
+        }
+
+        .cell.essential-cell.silly-card-cell {
+            box-shadow: inset 0 0 0 3px gold, inset 0 0 0 6px #dc3545;
         }
 
         .cell.preview {
-            background: rgba(52, 152, 219, 0.3) !important;
+            background: rgba(52, 152, 219, 0.4) !important;
+        }
+
+        .cell.invalid-preview {
+            background: rgba(231, 76, 60, 0.4) !important;
         }
 
         .cell .count {
-            font-size: 0.8em;
+            font-size: 0.9em;
             color: white;
             text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
         }
 
         .controls {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             flex-wrap: wrap;
             justify-content: center;
             margin-bottom: 10px;
         }
 
         .btn {
-            padding: 10px 20px;
-            font-size: 1em;
+            padding: 8px 16px;
+            font-size: 0.95em;
             border: 1px solid #333;
             border-radius: 8px;
             cursor: pointer;
@@ -165,22 +222,36 @@
             background: #c0392b;
         }
 
+        .btn.success {
+            background: #27ae60;
+            color: white;
+            border-color: #27ae60;
+        }
+
+        .side-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 280px;
+        }
+
         .info-panel {
             background: #fff;
             padding: 15px;
             border-radius: 10px;
             border: 1px solid #ddd;
-            max-width: 300px;
         }
 
         .info-panel h3 {
             margin-bottom: 10px;
             color: #2c3e50;
             font-size: 1em;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
         }
 
         .info-panel p {
-            font-size: 0.9em;
+            font-size: 0.85em;
             margin: 5px 0;
             line-height: 1.5;
         }
@@ -196,8 +267,7 @@
             padding: 15px;
             border-radius: 10px;
             border: 1px solid #ddd;
-            max-width: 300px;
-            max-height: 300px;
+            max-height: 250px;
             overflow-y: auto;
         }
 
@@ -205,6 +275,8 @@
             margin-bottom: 10px;
             color: #2c3e50;
             font-size: 1em;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
         }
 
         .card-item {
@@ -214,7 +286,7 @@
             padding: 5px 10px;
             margin: 3px 0;
             border-radius: 5px;
-            font-size: 0.85em;
+            font-size: 0.8em;
         }
 
         .card-item.essential {
@@ -234,7 +306,7 @@
             padding: 2px 8px;
             border-radius: 3px;
             cursor: pointer;
-            font-size: 0.8em;
+            font-size: 0.85em;
         }
 
         .card-item .remove-btn:hover {
@@ -245,38 +317,49 @@
             background: #fff;
             padding: 15px;
             border-radius: 10px;
-            border: 1px solid #ddd;
-            max-width: 300px;
-            margin-top: 10px;
+            border: 2px solid #ddd;
         }
 
         .analysis-result h3 {
             margin-bottom: 10px;
-            color: #27ae60;
+            color: #2c3e50;
+            font-size: 1em;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        .analysis-result p {
+            font-size: 0.9em;
+            margin: 5px 0;
         }
 
         .analysis-result .success {
             color: #27ae60;
+            font-weight: bold;
         }
 
         .analysis-result .fail {
             color: #e74c3c;
+            font-weight: bold;
         }
 
-        .mode-indicator {
-            background: #3498db;
-            color: white;
-            padding: 8px 15px;
-            border-radius: 5px;
-            margin-bottom: 10px;
-            font-weight: bold;
+        .analysis-result.is-aplus {
+            border-color: #27ae60;
+            background: #f0fff4;
+        }
+
+        .analysis-result.not-aplus {
+            border-color: #e74c3c;
+            background: #fff5f5;
         }
 
         .legend {
             display: flex;
             gap: 15px;
             margin-top: 10px;
-            font-size: 0.85em;
+            font-size: 0.8em;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
         .legend-item {
@@ -290,92 +373,133 @@
             height: 15px;
             border-radius: 3px;
         }
+
+        .coverage-grid {
+            display: grid;
+            gap: 1px;
+            background: #ccc;
+            margin-top: 10px;
+            font-size: 0.7em;
+        }
+
+        .coverage-cell {
+            background: #fff;
+            padding: 2px;
+            text-align: center;
+            min-width: 20px;
+        }
+
+        .coverage-cell.zero {
+            background: #ffcccc;
+            color: #c00;
+        }
     </style>
 </head>
 <body>
+    <h1>Problem 6: A+ Topper Simulation</h1>
+
+    <div class="size-control">
+        <label>Rows:</label>
+        <input type="range" id="rows-slider" min="2" max="10" value="4">
+        <span class="size-display" id="rows-display">4</span>
+        <label style="margin-left: 15px;">Cols:</label>
+        <input type="range" id="cols-slider" min="2" max="10" value="4">
+        <span class="size-display" id="cols-display">4</span>
+        <button class="btn" id="btn-apply-size">Apply</button>
+    </div>
+
     <div class="stats">
-        <div class="stat-item">카드 수: <strong id="card-count">0</strong></div>
-        <div class="stat-item">덮인 셀: <strong id="covered-count">0</strong>/100</div>
+        <div class="stat-item">Cards: <strong id="card-count">0</strong></div>
+        <div class="stat-item">Covered: <strong id="covered-count">0</strong>/<span id="total-cells">16</span></div>
         <div class="stat-item">Essential: <strong id="essential-count">0</strong></div>
         <div class="stat-item">Silly: <strong id="silly-count">0</strong></div>
     </div>
 
     <div class="main-container">
         <div class="grid-panel">
-            <div class="mode-indicator" id="mode-indicator">클릭하여 카드 배치</div>
-
             <div class="grid-container">
                 <div class="grid" id="grid"></div>
             </div>
 
             <div class="controls">
-                <button class="btn" id="btn-show-coverage">덮임 횟수 표시</button>
-                <button class="btn" id="btn-show-essential">Essential 표시</button>
+                <button class="btn" id="btn-show-coverage">Show Coverage</button>
+                <button class="btn" id="btn-show-essential">Show Essential</button>
             </div>
 
             <div class="controls">
-                <button class="btn danger" id="btn-clear">모두 지우기 (R)</button>
-                <button class="btn" id="btn-fill-25">25장 채우기</button>
+                <button class="btn danger" id="btn-clear">Clear All (R)</button>
+                <button class="btn success" id="btn-fill-optimal">Fill Optimal</button>
             </div>
 
             <div class="legend">
                 <div class="legend-item">
-                    <div class="legend-color" style="background: gold; border: 1px solid #333;"></div>
-                    <span>Essential (필수)</span>
+                    <div class="legend-color" style="background: gold; border: 2px solid #333;"></div>
+                    <span>Essential Cell (only 1 card covers)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #dc3545; border: 2px solid #333;"></div>
+                    <span>Silly Card (click × to remove)</span>
                 </div>
             </div>
         </div>
 
-        <div class="info-panel-container">
+        <div class="side-panel">
             <div class="info-panel">
-                <h3>사용 방법</h3>
-                <p>• 그리드 클릭: 2×2 카드 배치</p>
-                <p>• 카드는 겹칠 수 있습니다</p>
-                <p>• <span class="highlight">Essential</span>: 이 카드만 덮는 셀이 있음</p>
-                <p>• <span class="highlight">Silly</span>: 이 카드 없어도 모든 셀 덮임</p>
-                <p>• <strong>A+ Topper</strong>: 모든 카드가 Essential</p>
+                <h3>How to Use</h3>
+                <p>1. Adjust grid size (2x2 ~ 10x10)</p>
+                <p>2. Click grid to place 2x2 cards</p>
+                <p>3. Cards can overlap</p>
+                <p><span class="highlight">Essential</span>: Card covers a unique cell</p>
+                <p><span class="highlight">Silly</span>: Card can be removed</p>
+                <p><strong>A+ Topper</strong>: All cards are Essential</p>
+            </div>
+
+            <div class="analysis-result" id="analysis-panel">
+                <h3>Analysis Result</h3>
+                <p id="topper-result">Place cards to analyze.</p>
+                <p id="aplus-result"></p>
             </div>
 
             <div class="card-list">
-                <h3>배치된 카드 목록</h3>
+                <h3>Card List</h3>
                 <div id="card-list-content">
-                    <p style="color: #999;">카드가 없습니다</p>
+                    <p style="color: #999;">No cards placed</p>
                 </div>
-            </div>
-
-            <div class="analysis-result">
-                <h3>분석 결과</h3>
-                <p id="topper-result">카드를 배치해주세요.</p>
-                <p id="aplus-result"></p>
             </div>
         </div>
     </div>
 
     <script>
-        const GRID_SIZE = 10;
-        let cards = []; // Each card: { id, row, col }
+        let gridRows = 4;
+        let gridCols = 4;
+        let cards = [];
         let cardIdCounter = 0;
+        let nextColorIndex = 1;
         let showCoverage = false;
         let showEssential = false;
 
         function initGrid() {
             const grid = document.getElementById('grid');
             grid.innerHTML = '';
+            grid.style.gridTemplateColumns = `repeat(${gridCols}, 35px)`;
+            grid.style.gridTemplateRows = `repeat(${gridRows}, 35px)`;
 
-            for (let row = 0; row < GRID_SIZE; row++) {
-                for (let col = 0; col < GRID_SIZE; col++) {
+            for (let row = 0; row < gridRows; row++) {
+                for (let col = 0; col < gridCols; col++) {
                     const cell = document.createElement('div');
                     cell.className = 'cell';
                     cell.dataset.row = row;
                     cell.dataset.col = col;
 
-                    cell.addEventListener('click', () => placeCard(row, col));
+                    cell.addEventListener('click', (e) => handleCellClick(row, col, e));
                     cell.addEventListener('mouseenter', () => showPreview(row, col));
                     cell.addEventListener('mouseleave', clearPreview);
 
                     grid.appendChild(cell);
                 }
             }
+
+            document.getElementById('total-cells').textContent = gridRows * gridCols;
         }
 
         function getCell(row, col) {
@@ -383,7 +507,7 @@
         }
 
         function canPlaceCard(row, col) {
-            return row < GRID_SIZE - 1 && col < GRID_SIZE - 1;
+            return row >= 0 && col >= 0 && row < gridRows - 1 && col < gridCols - 1;
         }
 
         function getCardCells(row, col) {
@@ -396,7 +520,14 @@
         }
 
         function showPreview(row, col) {
-            if (!canPlaceCard(row, col)) return;
+            clearPreview();
+
+            if (!canPlaceCard(row, col)) {
+                // Show invalid preview for edge cells
+                const cell = getCell(row, col);
+                if (cell) cell.classList.add('invalid-preview');
+                return;
+            }
 
             const cells = getCardCells(row, col);
             cells.forEach(([r, c]) => {
@@ -406,9 +537,56 @@
         }
 
         function clearPreview() {
-            document.querySelectorAll('.cell.preview').forEach(cell => {
-                cell.classList.remove('preview');
+            document.querySelectorAll('.cell.preview, .cell.invalid-preview').forEach(cell => {
+                cell.classList.remove('preview', 'invalid-preview');
             });
+        }
+
+        function handleCellClick(row, col, event) {
+            const cell = event ? event.target.closest('.cell') : getCell(row, col);
+
+            // Check if clicking on a silly card corner to remove it
+            if (cell && cell.dataset.sillyCardId) {
+                removeCard(parseInt(cell.dataset.sillyCardId));
+                return;
+            }
+
+            if (!canPlaceCard(row, col)) return;
+
+            // Check if card already exists at this position
+            const existingCard = cards.find(c => c.row === row && c.col === col);
+            if (existingCard) {
+                removeCard(existingCard.id);
+            } else {
+                placeCard(row, col);
+            }
+        }
+
+        function getOverlappingCards(row, col) {
+            // Check cards that overlap OR are adjacent (to avoid similar colors next to each other)
+            // Two 2x2 cards overlap if distance < 2, adjacent if distance <= 2
+            return cards.filter(card =>
+                Math.abs(card.row - row) <= 2 && Math.abs(card.col - col) <= 2
+            );
+        }
+
+        function chooseCardColor(row, col) {
+            const overlapping = getOverlappingCards(row, col);
+            const usedColors = new Set(overlapping.map(c => c.colorIndex));
+
+            // Try colors in sequence starting from nextColorIndex, skip if overlapping
+            let color = nextColorIndex;
+            for (let i = 0; i < 10; i++) {
+                if (!usedColors.has(color)) {
+                    nextColorIndex = (color % 10) + 1; // Advance for next card
+                    return color;
+                }
+                color = (color % 10) + 1;
+            }
+            // Fallback: just use next in sequence
+            color = nextColorIndex;
+            nextColorIndex = (nextColorIndex % 10) + 1;
+            return color;
         }
 
         function placeCard(row, col) {
@@ -417,7 +595,8 @@
             const card = {
                 id: ++cardIdCounter,
                 row: row,
-                col: col
+                col: col,
+                colorIndex: chooseCardColor(row, col)
             };
             cards.push(card);
 
@@ -431,8 +610,8 @@
 
         function getCoverageMap() {
             const coverage = {};
-            for (let r = 0; r < GRID_SIZE; r++) {
-                for (let c = 0; c < GRID_SIZE; c++) {
+            for (let r = 0; r < gridRows; r++) {
+                for (let c = 0; c < gridCols; c++) {
                     coverage[`${r},${c}`] = [];
                 }
             }
@@ -440,7 +619,9 @@
             cards.forEach(card => {
                 const cells = getCardCells(card.row, card.col);
                 cells.forEach(([r, c]) => {
-                    coverage[`${r},${c}`].push(card.id);
+                    if (r < gridRows && c < gridCols) {
+                        coverage[`${r},${c}`].push(card.id);
+                    }
                 });
             });
 
@@ -453,8 +634,9 @@
 
             const cells = getCardCells(card.row, card.col);
             return cells.some(([r, c]) => {
+                if (r >= gridRows || c >= gridCols) return false;
                 const covering = coverage[`${r},${c}`];
-                return covering.length === 1 && covering[0] === cardId;
+                return covering && covering.length === 1 && covering[0] === cardId;
             });
         }
 
@@ -464,14 +646,15 @@
 
             const cells = getCardCells(card.row, card.col);
             return cells.every(([r, c]) => {
+                if (r >= gridRows || c >= gridCols) return true;
                 const covering = coverage[`${r},${c}`];
-                return covering.length > 1;
+                return covering && covering.length > 1;
             });
         }
 
         function isTopper(coverage) {
-            for (let r = 0; r < GRID_SIZE; r++) {
-                for (let c = 0; c < GRID_SIZE; c++) {
+            for (let r = 0; r < gridRows; r++) {
+                for (let c = 0; c < gridCols; c++) {
                     if (coverage[`${r},${c}`].length === 0) {
                         return false;
                     }
@@ -484,16 +667,23 @@
             const coverage = getCoverageMap();
 
             // Update cells
-            for (let r = 0; r < GRID_SIZE; r++) {
-                for (let c = 0; c < GRID_SIZE; c++) {
+            for (let r = 0; r < gridRows; r++) {
+                for (let c = 0; c < gridCols; c++) {
                     const cell = getCell(r, c);
+                    if (!cell) continue;
+
                     const covering = coverage[`${r},${c}`];
 
+                    // Reset classes and data
                     cell.className = 'cell';
                     cell.innerHTML = '';
+                    delete cell.dataset.sillyCardId;
 
                     if (covering.length > 0) {
-                        const colorIndex = (covering[covering.length - 1] % 10) || 10;
+                        // Use the card's colorIndex instead of card ID
+                        const topCardId = covering[covering.length - 1];
+                        const topCard = cards.find(c => c.id === topCardId);
+                        const colorIndex = topCard ? topCard.colorIndex : 1;
                         cell.classList.add(`covered-${colorIndex}`);
 
                         if (showCoverage) {
@@ -504,7 +694,24 @@
                         }
 
                         if (showEssential && covering.length === 1) {
-                            cell.classList.add('essential');
+                            cell.classList.add('essential-cell');
+                        }
+                    }
+
+                    // Mark silly card cells
+                    const sillyCardsHere = cards.filter(card => {
+                        const cells = getCardCells(card.row, card.col);
+                        return cells.some(([cr, cc]) => cr === r && cc === c) && isSilly(card.id, coverage);
+                    });
+
+                    if (sillyCardsHere.length > 0) {
+                        cell.classList.add('silly-card-cell');
+
+                        // Mark corner cell (top-left of silly card) for deletion
+                        const cornerCard = sillyCardsHere.find(card => card.row === r && card.col === c);
+                        if (cornerCard) {
+                            cell.classList.add('silly-card-corner');
+                            cell.dataset.sillyCardId = cornerCard.id;
                         }
                     }
                 }
@@ -513,32 +720,33 @@
             // Update card list
             const cardListContent = document.getElementById('card-list-content');
             if (cards.length === 0) {
-                cardListContent.innerHTML = '<p style="color: #999;">카드가 없습니다</p>';
+                cardListContent.innerHTML = '<p style="color: #999;">No cards placed</p>';
             } else {
                 cardListContent.innerHTML = cards.map(card => {
                     const essential = isEssential(card.id, coverage);
                     const silly = isSilly(card.id, coverage);
                     const className = essential ? 'essential' : (silly ? 'silly' : '');
-                    const status = essential ? '✓ Essential' : (silly ? '✗ Silly' : '');
+                    const status = essential ? 'Essential' : (silly ? 'Silly' : '');
 
                     return `
                         <div class="card-item ${className}">
                             <span>#${card.id} (${card.row},${card.col}) ${status}</span>
-                            <button class="remove-btn" onclick="removeCard(${card.id})">×</button>
+                            <button class="remove-btn" onclick="removeCard(${card.id})">X</button>
                         </div>
                     `;
                 }).join('');
             }
 
             // Update stats
+            const totalCells = gridRows * gridCols;
             document.getElementById('card-count').textContent = cards.length;
 
             let coveredCount = 0;
             let essentialCount = 0;
             let sillyCount = 0;
 
-            for (let r = 0; r < GRID_SIZE; r++) {
-                for (let c = 0; c < GRID_SIZE; c++) {
+            for (let r = 0; r < gridRows; r++) {
+                for (let c = 0; c < gridCols; c++) {
                     if (coverage[`${r},${c}`].length > 0) {
                         coveredCount++;
                     }
@@ -555,49 +763,93 @@
             document.getElementById('silly-count').textContent = sillyCount;
 
             // Update analysis
+            const analysisPanel = document.getElementById('analysis-panel');
             const topperResult = document.getElementById('topper-result');
             const aplusResult = document.getElementById('aplus-result');
 
+            analysisPanel.classList.remove('is-aplus', 'not-aplus');
+
             if (cards.length === 0) {
-                topperResult.textContent = '카드를 배치해주세요.';
+                topperResult.textContent = 'Place cards to analyze.';
                 topperResult.className = '';
                 aplusResult.textContent = '';
             } else if (isTopper(coverage)) {
-                topperResult.innerHTML = `<span class="success">✓ Topper: 모든 셀이 덮여 있습니다.</span>`;
+                topperResult.innerHTML = `<span class="success">Topper: All ${totalCells} cells covered.</span>`;
 
                 if (essentialCount === cards.length) {
-                    aplusResult.innerHTML = `<span class="success">✓ A+ Topper: 모든 카드가 Essential입니다!</span>`;
+                    aplusResult.innerHTML = `<span class="success">A+ Topper! All ${cards.length} cards are Essential.</span>`;
+                    analysisPanel.classList.add('is-aplus');
                 } else if (sillyCount > 0) {
-                    aplusResult.innerHTML = `<span class="fail">✗ Silly 카드가 ${sillyCount}개 있습니다.</span>`;
+                    aplusResult.innerHTML = `<span class="fail">Not A+: ${sillyCount} Silly card(s) can be removed.</span>`;
+                    analysisPanel.classList.add('not-aplus');
                 } else {
-                    aplusResult.innerHTML = `<span class="fail">✗ A+ 아님: ${cards.length - essentialCount}개 카드가 Essential이 아닙니다.</span>`;
+                    aplusResult.innerHTML = `<span class="fail">Not A+: ${cards.length - essentialCount} card(s) are not Essential.</span>`;
+                    analysisPanel.classList.add('not-aplus');
                 }
             } else {
-                topperResult.innerHTML = `<span class="fail">✗ Not Topper: ${100 - coveredCount}개 셀이 덮이지 않았습니다.</span>`;
+                topperResult.innerHTML = `<span class="fail">Not Topper: ${totalCells - coveredCount} cell(s) uncovered.</span>`;
                 aplusResult.textContent = '';
+                analysisPanel.classList.add('not-aplus');
             }
         }
 
         function clearAll() {
             cards = [];
             cardIdCounter = 0;
+            nextColorIndex = 1;
             render();
         }
 
-        function fillWith25() {
+        function fillOptimal() {
             clearAll();
-            // Place 25 non-overlapping cards in a 5x5 pattern
-            for (let i = 0; i < 5; i++) {
-                for (let j = 0; j < 5; j++) {
-                    const card = {
-                        id: ++cardIdCounter,
-                        row: i * 2,
-                        col: j * 2
-                    };
-                    cards.push(card);
+
+            // For even grid sizes, we can tile perfectly
+            // For odd grid sizes, we need overlapping
+            const tilesPerRowCount = Math.ceil(gridRows / 2);
+            const tilesPerColCount = Math.ceil(gridCols / 2);
+
+            for (let i = 0; i < tilesPerRowCount; i++) {
+                for (let j = 0; j < tilesPerColCount; j++) {
+                    let row = i * 2;
+                    let col = j * 2;
+
+                    // Adjust for boundary
+                    if (row > gridRows - 2) row = gridRows - 2;
+                    if (col > gridCols - 2) col = gridCols - 2;
+
+                    // Avoid duplicates
+                    const exists = cards.some(c => c.row === row && c.col === col);
+                    if (!exists && canPlaceCard(row, col)) {
+                        const card = {
+                            id: ++cardIdCounter,
+                            row: row,
+                            col: col,
+                            colorIndex: chooseCardColor(row, col)
+                        };
+                        cards.push(card);
+                    }
                 }
             }
             render();
+        }
+
+        function updateSizeDisplay() {
+            document.getElementById('rows-display').textContent = document.getElementById('rows-slider').value;
+            document.getElementById('cols-display').textContent = document.getElementById('cols-slider').value;
+        }
+
+        function applySize() {
+            const newRows = parseInt(document.getElementById('rows-slider').value);
+            const newCols = parseInt(document.getElementById('cols-slider').value);
+            if (newRows !== gridRows || newCols !== gridCols) {
+                gridRows = newRows;
+                gridCols = newCols;
+                cards = [];
+                cardIdCounter = 0;
+                nextColorIndex = 1;
+                initGrid();
+                render();
+            }
         }
 
         function toggleCoverage() {
@@ -613,13 +865,16 @@
         }
 
         // Event listeners
+        document.getElementById('rows-slider').addEventListener('input', updateSizeDisplay);
+        document.getElementById('cols-slider').addEventListener('input', updateSizeDisplay);
+        document.getElementById('btn-apply-size').addEventListener('click', applySize);
         document.getElementById('btn-clear').addEventListener('click', clearAll);
-        document.getElementById('btn-fill-25').addEventListener('click', fillWith25);
+        document.getElementById('btn-fill-optimal').addEventListener('click', fillOptimal);
         document.getElementById('btn-show-coverage').addEventListener('click', toggleCoverage);
         document.getElementById('btn-show-essential').addEventListener('click', toggleEssential);
 
         document.addEventListener('keydown', (e) => {
-            if (e.code === 'KeyR' && !e.ctrlKey) {
+            if (e.code === 'KeyR' && !e.ctrlKey && !e.metaKey) {
                 e.preventDefault();
                 clearAll();
             }

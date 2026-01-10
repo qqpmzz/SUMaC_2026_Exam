@@ -1,0 +1,42 @@
+Problem 4: p-Machine
+
+Suppose p is a prime number such that p > 2. A p-machine is a very basic deterministic
+machine consisting of a hand crank, a toggle switch, and a display. The display shows one
+number from the set {1, 2, 3, ..., p} inside of a square that is either black or red.
+
+The p-machine operates on a computer program consisting of a single positive integer k where
+k <= p. In particular, with program k, flipping the toggle switch and turning the crank has a
+deterministic outcome in the sense that starting with any color and number on the display, the
+same combination of crank turns and flips of the toggle switch, in the same order, will always
+yield the same results, only depending on k and the starting state of the display.
+
+Furthermore, the toggle switch and crank operate according to the following rules and features:
+
+i. Flipping the toggle switch up or down changes the square from red to black, or black to
+   red, leaving the number unchanged.
+
+ii. Turning the crank one full turn does not change the color, but it changes the number as
+    follows.
+    - if the square is red and the displayed number is less than p, then the number is
+      increased by one, and if the square is red and the displayed number is p, then the
+      number changes to 1.
+    - if the square is black and the number is less than or equal to p - k, then the number
+      increases by k, and if the number is greater than p - k, then it decreases by p - k.
+
+iii. A program k is successful for the p-machine if whenever i and j are distinct positive
+     integers less than or equal to p, and i is displayed (on either a red or black square) then
+     there is a sequence of crank turns such that j is displayed.
+
+iv. A program k is special for the p-machine if it has the property that toggling the switch
+    followed by a single turn of the crank has the same outcome as first turning the crank k
+    full turns and then flipping the switch.
+
+Suppose p is a prime and p > 2, and suppose k is a positive integer such that k <= p.
+Please answer the following:
+
+(a) Find necessary and sufficient conditions on k for program k to be successful for the p
+    machine. Be sure to show that your conditions are both necessary and sufficient.
+
+(b) Find necessary and sufficient conditions on k for program k to be both successful and
+    special for the p machine. Be sure to show that your conditions are both necessary and
+    sufficient.

@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">
+<head>
+    <meta charset="UTF-8">
+    <meta name="ProgId" content="Word.Document">
+    <meta name="Generator" content="Microsoft Word 15">
+    <title>Problem 4: p-Machine Solution</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2.5cm;
+        }
+        body {
+            font-family: 'Malgun Gothic', '맑은 고딕', Arial, sans-serif;
+            font-size: 11pt;
+            line-height: 1.6;
+            color: #000;
+        }
+        h1 {
+            font-size: 18pt;
+            text-align: center;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10pt;
+            margin-bottom: 20pt;
+        }
+        h2 {
+            font-size: 14pt;
+            background-color: #f0f0f0;
+            padding: 8pt 12pt;
+            border-left: 4pt solid #333;
+            margin-top: 20pt;
+        }
+        h3 {
+            font-size: 12pt;
+            color: #333;
+            margin-top: 15pt;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 10pt 0;
+        }
+        th, td {
+            border: 1pt solid #666;
+            padding: 8pt 12pt;
+            text-align: center;
+        }
+        th {
+            background-color: #e8e8e8;
+            font-weight: bold;
+        }
+        .formula {
+            background-color: #f8f8f8;
+            border: 1pt solid #ddd;
+            padding: 10pt 15pt;
+            margin: 10pt 0;
+            font-family: 'Cambria Math', 'Times New Roman', serif;
+            font-size: 12pt;
+            text-align: center;
+        }
+        .formula.highlight {
+            border-left: 4pt solid #c00;
+            background-color: #fff8f8;
+        }
+        .formula.success {
+            border-left: 4pt solid #090;
+            background-color: #f8fff8;
+        }
+        .answer-box {
+            border: 2pt solid #000;
+            padding: 15pt;
+            margin: 15pt 0;
+            background-color: #fffef0;
+            text-align: center;
+        }
+        .answer-box strong {
+            font-size: 13pt;
+        }
+        ul {
+            margin: 8pt 0;
+            padding-left: 25pt;
+        }
+        li {
+            margin: 5pt 0;
+        }
+        .check {
+            color: green;
+        }
+        hr {
+            border: none;
+            border-top: 1pt solid #ccc;
+            margin: 20pt 0;
+        }
+        .two-column {
+            display: table;
+            width: 100%;
+        }
+        .column {
+            display: table-cell;
+            width: 48%;
+            padding: 10pt;
+            vertical-align: top;
+        }
+        .red-box {
+            border: 2pt solid #c00;
+            background-color: #fff8f8;
+            padding: 10pt;
+        }
+        .black-box {
+            border: 2pt solid #333;
+            background-color: #f8f8f8;
+            padding: 10pt;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Problem 4: p-Machine Solution</h1>
+
+<h2>1. 조건</h2>
+<ul>
+    <li><strong>p</strong>: 2보다 큰 소수 (prime, p &gt; 2)</li>
+    <li><strong>k</strong>: 1 &le; k &le; p 인 양의 정수</li>
+    <li><strong>디스플레이</strong>: {1, 2, 3, ..., p} 중 하나의 숫자</li>
+    <li><strong>상자 색</strong>: 빨강(Red) 또는 검정(Black)</li>
+</ul>
+
+<h2>2. 연산 정의</h2>
+
+<h3>토글 스위치 (Toggle)</h3>
+<ul>
+    <li>빨강 &rarr; 검정, 또는 검정 &rarr; 빨강으로 색만 변경</li>
+    <li>숫자는 변하지 않음</li>
+</ul>
+
+<h3>빨간색 크랭크 R(n) - 1회 회전</h3>
+<table>
+    <tr>
+        <th>조건</th>
+        <th>결과</th>
+    </tr>
+    <tr>
+        <td>n &lt; p</td>
+        <td>n + 1</td>
+    </tr>
+    <tr>
+        <td>n = p</td>
+        <td>1</td>
+    </tr>
+</table>
+<p>즉, 1씩 증가하며 p에서 1로 순환</p>
+
+<h3>검은색 크랭크 B(n) - 1회 회전</h3>
+<table>
+    <tr>
+        <th>조건</th>
+        <th>결과</th>
+    </tr>
+    <tr>
+        <td>n &le; p - k</td>
+        <td>n + k</td>
+    </tr>
+    <tr>
+        <td>n &gt; p - k</td>
+        <td>n - (p - k)</td>
+    </tr>
+</table>
+<p>즉, k씩 증가하며 p를 넘으면 p만큼 감소 (순환)</p>
+
+<h2>3. 수식 표현 (1 ~ p 범위)</h2>
+
+<div class="formula">
+    R(n) = (n mod p) + 1
+</div>
+
+<div class="formula">
+    B(n) = ((n - 1 + k) mod p) + 1
+</div>
+
+<p><strong>검증 (p = 7, k = 3):</strong></p>
+<ul>
+    <li>R(6) = (6 mod 7) + 1 = 6 + 1 = 7 <span class="check">&#10003;</span></li>
+    <li>R(7) = (7 mod 7) + 1 = 0 + 1 = 1 <span class="check">&#10003;</span></li>
+    <li>B(4) = ((4 - 1 + 3) mod 7) + 1 = (6 mod 7) + 1 = 7 <span class="check">&#10003;</span></li>
+    <li>B(5) = ((5 - 1 + 3) mod 7) + 1 = (7 mod 7) + 1 = 1 <span class="check">&#10003;</span></li>
+</ul>
+
+<h2>4. 0-based 변환 (0 ~ p-1 범위)</h2>
+
+<p>숫자 범위를 1~p에서 0~(p-1)로 변환하면 mod 연산이 더 깔끔해집니다.</p>
+
+<p><strong>변환:</strong> n' = n - 1 (즉, 1&rarr;0, 2&rarr;1, ..., p&rarr;p-1)</p>
+
+<h3>변환된 빨간색 크랭크 R'(n)</h3>
+<div class="formula">
+    R'(n) = (n + 1) mod p
+</div>
+
+<h3>변환된 검은색 크랭크 B'(n)</h3>
+<div class="formula">
+    B'(n) = (n + k) mod p
+</div>
+
+<p><strong>검증 (p = 7, k = 3, 0-based):</strong></p>
+<ul>
+    <li>R'(5) = (5 + 1) mod 7 = 6 <span class="check">&#10003;</span></li>
+    <li>R'(6) = (6 + 1) mod 7 = 0 <span class="check">&#10003;</span></li>
+    <li>B'(3) = (3 + 3) mod 7 = 6 <span class="check">&#10003;</span></li>
+    <li>B'(4) = (4 + 3) mod 7 = 0 <span class="check">&#10003;</span></li>
+</ul>
+
+<h2>5. Successful 조건 정의</h2>
+
+<p><strong>"program k is successful"의 정의:</strong></p>
+<p style="margin-left: 20pt; padding: 10pt; background-color: #f0f0f0; border-left: 3pt solid #666;">
+    임의의 서로 다른 두 숫자 i, j (1 &le; i, j &le; p)에 대해,<br>
+    i가 디스플레이에 표시된 상태(빨강 또는 검정)에서 시작하여<br>
+    크랭크를 여러 번 돌려서 j를 표시할 수 있다.
+</p>
+<p>즉, 크랭크만으로 모든 숫자를 방문할 수 있어야 함.</p>
+
+<h2>6. Special 조건 정의</h2>
+
+<p><strong>"program k is special"의 정의:</strong></p>
+<div class="formula">
+    Toggle &rarr; Crank(1회) = Crank(k회) &rarr; Toggle
+</div>
+<p>즉, "토글 후 크랭크 1회"와 "크랭크 k회 후 토글"의 결과가<br>
+모든 시작 상태(색상, 숫자)에서 동일해야 함.</p>
+
+<h2>7. Part (a): Successful 조건 풀이</h2>
+
+<h3>빨간색에서 시작</h3>
+<p>R'(n) = (n + 1) mod p</p>
+<p>R'를 반복 적용하면:</p>
+<ul>
+    <li>R'<sup>1</sup>(n) = (n + 1) mod p</li>
+    <li>R'<sup>2</sup>(n) = (n + 2) mod p</li>
+    <li>...</li>
+    <li>R'<sup>m</sup>(n) = (n + m) mod p</li>
+</ul>
+<p>m = 1, 2, ..., p-1 을 적용하면 n을 제외한 모든 숫자 방문 가능.</p>
+<p><strong>따라서 빨간색에서는 항상 Successful.</strong></p>
+
+<h3>검은색에서 시작</h3>
+<p>B'(n) = (n + k) mod p</p>
+<p>B'를 반복 적용하면:</p>
+<ul>
+    <li>B'<sup>1</sup>(n) = (n + k) mod p</li>
+    <li>B'<sup>2</sup>(n) = (n + 2k) mod p</li>
+    <li>...</li>
+    <li>B'<sup>m</sup>(n) = (n + mk) mod p</li>
+</ul>
+<p>{mk mod p : m = 0, 1, 2, ...}가 생성하는 집합의 크기는:</p>
+<div class="formula">
+    p / gcd(k, p)
+</div>
+<p>모든 숫자(0 ~ p-1)를 방문하려면 이 크기가 p여야 함:</p>
+<div class="formula">
+    p / gcd(k, p) = p &nbsp;&nbsp;&rArr;&nbsp;&nbsp; gcd(k, p) = 1
+</div>
+
+<h3>결론</h3>
+<div class="answer-box">
+    <strong>Successful &hArr; gcd(k, p) = 1</strong>
+</div>
+<p>(p가 소수이므로, k &ne; p 일 때 gcd(k,p) = 1)</p>
+
+<h2>8. Part (b): Successful AND Special 조건 풀이</h2>
+
+<p>Special 조건을 분석합니다.</p>
+
+<h3>빨간색에서 시작 (숫자 n)</h3>
+<p><strong>경로 1: Toggle &rarr; Crank(1회)</strong></p>
+<ul>
+    <li>Toggle: 빨강 &rarr; 검정</li>
+    <li>Crank: B'(n) = (n + k) mod p</li>
+    <li>결과: (검정, n + k)</li>
+</ul>
+
+<p><strong>경로 2: Crank(k회) &rarr; Toggle</strong></p>
+<ul>
+    <li>Crank k회: R'<sup>k</sup>(n) = (n + k) mod p</li>
+    <li>Toggle: 빨강 &rarr; 검정</li>
+    <li>결과: (검정, n + k)</li>
+</ul>
+
+<p><strong>비교:</strong> (n + k) = (n + k) &rArr; <span style="color: green; font-weight: bold;">항상 만족!</span></p>
+
+<h3>검은색에서 시작 (숫자 n)</h3>
+<p><strong>경로 1: Toggle &rarr; Crank(1회)</strong></p>
+<ul>
+    <li>Toggle: 검정 &rarr; 빨강</li>
+    <li>Crank: R'(n) = (n + 1) mod p</li>
+    <li>결과: (빨강, n + 1)</li>
+</ul>
+
+<p><strong>경로 2: Crank(k회) &rarr; Toggle</strong></p>
+<ul>
+    <li>Crank k회: B'<sup>k</sup>(n) = (n + k&middot;k) mod p = (n + k&sup2;) mod p</li>
+    <li>Toggle: 검정 &rarr; 빨강</li>
+    <li>결과: (빨강, n + k&sup2;)</li>
+</ul>
+
+<p><strong>비교:</strong> (n + 1) &equiv; (n + k&sup2;) (mod p)</p>
+
+<div class="formula highlight">
+    k&sup2; &equiv; 1 (mod p)
+</div>
+
+<h3>k&sup2; &equiv; 1 (mod p)의 해</h3>
+<p>k&sup2; - 1 &equiv; 0 (mod p)</p>
+<p>(k - 1)(k + 1) &equiv; 0 (mod p)</p>
+
+<p>p가 소수이므로:</p>
+<ul>
+    <li>k - 1 &equiv; 0 (mod p) &rArr; k = 1</li>
+    <li>k + 1 &equiv; 0 (mod p) &rArr; k = p - 1</li>
+</ul>
+
+<p>1 &le; k &le; p 범위에서: <strong>k = 1 또는 k = p - 1</strong></p>
+
+<h3>Successful과 Special 동시 만족</h3>
+<p>Special 조건: k = 1 또는 k = p - 1</p>
+<p>Successful 조건 검증:</p>
+<ul>
+    <li>k = 1: gcd(1, p) = 1 <span class="check">&#10003;</span></li>
+    <li>k = p - 1: gcd(p-1, p) = 1 (연속한 두 정수는 서로소) <span class="check">&#10003;</span></li>
+</ul>
+
+<h3>결론</h3>
+<div class="answer-box">
+    <strong>Successful AND Special &hArr; k = 1 또는 k = p - 1</strong>
+</div>
+
+<h2>9. 최종 답</h2>
+
+<h3>(a) Successful 조건</h3>
+<div class="formula success">
+    <strong>gcd(k, p) = 1</strong>
+</div>
+<p>p가 소수이므로, 이는 k &ne; p 와 동치.<br>
+즉, <strong>1 &le; k &le; p - 1</strong></p>
+
+<h3>(b) Successful AND Special 조건</h3>
+<div class="formula success">
+    <strong>k = 1 또는 k = p - 1</strong>
+</div>
+
+</body>
+</html>

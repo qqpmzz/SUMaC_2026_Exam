@@ -1,0 +1,195 @@
+{\rtf1\ansi\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset129 Malgun Gothic;}{\f1\fnil\fcharset0 Cambria Math;}}
+{\colortbl ;\red0\green0\blue0;\red192\green0\blue0;\red0\green128\blue0;\red102\green102\blue102;\red51\green51\blue51;}
+\viewkind4\uc1
+\pard\sa200\sl276\slmult1\qc\b\f0\fs36 Problem 4: p-Machine Solution\b0\fs22\par
+\pard\sa200\sl276\slmult1\par
+
+\pard\sb100\sa100\sl276\slmult1\cf5\b\fs28 1. \uc0\u51312 \u44148 \par
+\pard\sa200\sl276\slmult1\cf1\b0\fs22
+\bullet  \b p\b0 : 2\uc0\u48372 \u45796  \u53360  \u49548 \u49688  (prime, p > 2)\par
+\bullet  \b k\b0 : 1 \uc0\u8804  k \u8804  p \u51064  \u50577 \u51032  \u51221 \u49688 \par
+\bullet  \b\uc0\u46356 \u49828 \u54540 \u47112 \u51060 \b0 : \{1, 2, 3, ..., p\} \uc0\u51473  \u54616 \u45208 \u51032  \u49707 \u51088 \par
+\bullet  \b\uc0\u49345 \u51088  \u49353 \b0 : \uc0\u48736 \u44053 (Red) \u46608 \u45716  \u44160 \u51221 (Black)\par
+\par
+
+\pard\sb100\sa100\sl276\slmult1\cf5\b\fs28 2. \uc0\u50672 \u49328  \u51221 \u51032 \par
+\pard\sa200\sl276\slmult1\cf1\b0\fs22\par
+
+\b\fs24\uc0\u53664 \u44544  \u49828 \u50948 \u52824  (Toggle)\b0\fs22\par
+\bullet  \uc0\u48736 \u44053  \u8594  \u44160 \u51221 , \u46608 \u45716  \u44160 \u51221  \u8594  \u48736 \u44053 \u51004 \u47196  \u49353 \u47564  \u48320 \u44221 \par
+\bullet  \uc0\u49707 \u51088 \u45716  \u48320 \u54616 \u51648  \u50506 \u51020 \par
+\par
+
+\cf2\b\fs24\uc0\u48736 \u44036 \u49353  \u53356 \u47021 \u53356  R(n) - 1\u54924  \u54924 \u51204 \cf1\b0\fs22\par
+\bullet  n < p \uc0\u51060 \u47732 : n + 1\par
+\bullet  n = p \uc0\u51060 \u47732 : 1\par
+\uc0\u51593 , 1\u50473  \u51613 \u44032 \u54616 \u47728  p\u50640 \u49436  1\u47196  \u49692 \u54872 \par
+\par
+
+\cf5\b\fs24\uc0\u44160 \u51008 \u49353  \u53356 \u47021 \u53356  B(n) - 1\u54924  \u54924 \u51204 \cf1\b0\fs22\par
+\bullet  n \uc0\u8804  p - k \u51060 \u47732 : n + k\par
+\bullet  n > p - k \uc0\u51060 \u47732 : n - (p - k)\par
+\uc0\u51593 , k\u50473  \u51613 \u44032 \u54616 \u47728  p\u47484  \u45336 \u51004 \u47732  p\u47564 \u53372  \u44048 \u49548  (\u49692 \u54872 )\par
+\par
+
+\pard\sb100\sa100\sl276\slmult1\cf5\b\fs28 3. \uc0\u49688 \u49885  \u54364 \u54788  (1 ~ p \u48276 \u50948 )\par
+\pard\sa200\sl276\slmult1\cf1\b0\fs22\par
+
+\pard\box\brdrs\brdrw10\brsp20\sa200\sl276\slmult1\f1 R(n) = (n mod p) + 1\f0\par
+\pard\sa200\sl276\slmult1\par
+
+\pard\box\brdrs\brdrw10\brsp20\sa200\sl276\slmult1\f1 B(n) = ((n - 1 + k) mod p) + 1\f0\par
+\pard\sa200\sl276\slmult1\par
+
+\b\uc0\u44160 \u51613  (p = 7, k = 3):\b0\par
+\bullet  R(6) = (6 mod 7) + 1 = 7 \cf3\uc0\u10003 \cf1\par
+\bullet  R(7) = (7 mod 7) + 1 = 1 \cf3\uc0\u10003 \cf1\par
+\bullet  B(4) = ((4 - 1 + 3) mod 7) + 1 = 7 \cf3\uc0\u10003 \cf1\par
+\bullet  B(5) = ((5 - 1 + 3) mod 7) + 1 = 1 \cf3\uc0\u10003 \cf1\par
+\par
+
+\pard\sb100\sa100\sl276\slmult1\cf5\b\fs28 4. 0-based \uc0\u48320 \u54872  (0 ~ p-1 \u48276 \u50948 )\par
+\pard\sa200\sl276\slmult1\cf1\b0\fs22\par
+
+\uc0\u49707 \u51088  \u48276 \u50948 \u47484  1~p\u50640 \u49436  0~(p-1)\u47196  \u48320 \u54872 \u54616 \u47732  mod \u50672 \u49328 \u51060  \u45908  \u44620 \u45140 \u54644 \u51665 \u45768 \u45796 .\par
+\par
+\b\uc0\u48320 \u54872 :\b0  n' = n - 1 (\uc0\u51593 , 1\u8594 0, 2\u8594 1, ..., p\u8594 p-1)\par
+\par
+
+\b\uc0\u48320 \u54872 \u46108  \u48736 \u44036 \u49353  \u53356 \u47021 \u53356  R'(n)\b0\par
+\pard\box\brdrs\brdrw10\brsp20\sa200\sl276\slmult1\f1 R'(n) = (n + 1) mod p\f0\par
+\pard\sa200\sl276\slmult1\par
+
+\b\uc0\u48320 \u54872 \u46108  \u44160 \u51008 \u49353  \u53356 \u47021 \u53356  B'(n)\b0\par
+\pard\box\brdrs\brdrw10\brsp20\sa200\sl276\slmult1\f1 B'(n) = (n + k) mod p\f0\par
+\pard\sa200\sl276\slmult1\par
+
+\pard\sb100\sa100\sl276\slmult1\cf5\b\fs28 5. Successful \uc0\u51312 \u44148  \u51221 \u51032 \par
+\pard\sa200\sl276\slmult1\cf1\b0\fs22\par
+
+\b "program k is successful"\uc0\u51032  \u51221 \u51032 :\b0\par
+\uc0\u51076 \u51032 \u51032  \u49436 \u47196  \u45796 \u47480  \u46160  \u49707 \u51088  i, j (1 \u8804  i, j \u8804  p)\u50640  \u45824 \u54644 ,\par
+i\uc0\u44032  \u46356 \u49828 \u54540 \u47112 \u51060 \u50640  \u54364 \u49884 \u46108  \u49345 \u53468 (\u48736 \u44053  \u46608 \u45716  \u44160 \u51221 )\u50640 \u49436  \u49884 \u51089 \u54616 \u50668 \par
+\uc0\u53356 \u47021 \u53356 \u47484  \u50668 \u47084  \u48264  \u46028 \u47140 \u49436  j\u47484  \u54364 \u49884 \u54624  \u49688  \u51080 \u45796 .\par
+\par
+\uc0\u51593 , \u53356 \u47021 \u53356 \u47564 \u51004 \u47196  \u47784 \u46304  \u49707 \u51088 \u47484  \u48169 \u47928 \u54624  \u49688  \u51080 \u50612 \u50556  \u54632 .\par
+\par
+
+\pard\sb100\sa100\sl276\slmult1\cf5\b\fs28 6. Special \uc0\u51312 \u44148  \u51221 \u51032 \par
+\pard\sa200\sl276\slmult1\cf1\b0\fs22\par
+
+\b "program k is special"\uc0\u51032  \u51221 \u51032 :\b0\par
+\pard\box\brdrs\brdrw10\brsp20\sa200\sl276\slmult1\f1 Toggle \uc0\u8594  Crank(1\u54924 ) = Crank(k\u54924 ) \u8594  Toggle\f0\par
+\pard\sa200\sl276\slmult1\par
+\uc0\u51593 , "\u53664 \u44544  \u54980  \u53356 \u47021 \u53356  1\u54924 "\u50752  "\u53356 \u47021 \u53356  k\u54924  \u54980  \u53664 \u44544 "\u51032  \u44208 \u44284 \u44032 \par
+\uc0\u47784 \u46304  \u49884 \u51089  \u49345 \u53468 (\u49353 \u49345 , \u49707 \u51088 )\u50640 \u49436  \u46041 \u51068 \u54644 \u50556  \u54632 .\par
+\par
+
+\pard\sb100\sa100\sl276\slmult1\cf5\b\fs28 7. Part (a): Successful \uc0\u51312 \u44148  \u54400 \u51060 \par
+\pard\sa200\sl276\slmult1\cf1\b0\fs22\par
+
+\cf2\b\uc0\u48736 \u44036 \u49353 \u50640 \u49436  \u49884 \u51089 \cf1\b0\par
+R'(n) = (n + 1) mod p\par
+R'\uc0\u47484  \u48152 \u48373  \u51201 \u50857 \u54616 \u47732 :\par
+\bullet  R'\super 1\nosupersub (n) = (n + 1) mod p\par
+\bullet  R'\super 2\nosupersub (n) = (n + 2) mod p\par
+\bullet  ...\par
+\bullet  R'\super m\nosupersub (n) = (n + m) mod p\par
+\par
+m = 1, 2, ..., p-1 \uc0\u51012  \u51201 \u50857 \u54616 \u47732  n\u51012  \u51228 \u50808 \u54620  \u47784 \u46304  \u49707 \u51088  \u48169 \u47928  \u44032 \u45733 .\par
+\b\uc0\u46384 \u46972 \u49436  \u48736 \u44036 \u49353 \u50640 \u49436 \u45716  \u54637 \u49345  Successful.\b0\par
+\par
+
+\cf5\b\uc0\u44160 \u51008 \u49353 \u50640 \u49436  \u49884 \u51089 \cf1\b0\par
+B'(n) = (n + k) mod p\par
+B'\uc0\u47484  \u48152 \u48373  \u51201 \u50857 \u54616 \u47732 :\par
+\bullet  B'\super 1\nosupersub (n) = (n + k) mod p\par
+\bullet  B'\super m\nosupersub (n) = (n + mk) mod p\par
+\par
+\{mk mod p : m = 0, 1, 2, ...\}\uc0\u44032  \u49373 \u49457 \u54616 \u45716  \u51665 \u54633 \u51032  \u53356 \u44592 \u45716 : p / gcd(k, p)\par
+\uc0\u47784 \u46304  \u49707 \u51088 (0 ~ p-1)\u47484  \u48169 \u47928 \u54616 \u47140 \u47732  \u51060  \u53356 \u44592 \u44032  p\u50668 \u50556  \u54632 :\par
+\par
+\pard\box\brdrs\brdrw10\brsp20\sa200\sl276\slmult1\f1 p / gcd(k, p) = p  \uc0\u8658   gcd(k, p) = 1\f0\par
+\pard\sa200\sl276\slmult1\par
+
+\b\uc0\u44208 \u47200 \b0\par
+\pard\box\brdrs\brdrw10\brsp20\sa200\sl276\slmult1\cf3\b\f1\fs28 Successful \uc0\u8660  gcd(k, p) = 1\cf1\b0\f0\fs22\par
+\pard\sa200\sl276\slmult1\par
+(p\uc0\u44032  \u49548 \u49688 \u51060 \u47728 \u47196 , k \u8800  p \u51068  \u46412  gcd(k,p) = 1)\par
+\par
+
+\pard\sb100\sa100\sl276\slmult1\cf5\b\fs28 8. Part (b): Successful AND Special \uc0\u51312 \u44148  \u54400 \u51060 \par
+\pard\sa200\sl276\slmult1\cf1\b0\fs22\par
+
+Special \uc0\u51312 \u44148 \u51012  \u48516 \u49437 \u54633 \u45768 \u45796 .\par
+\par
+
+\cf2\b\uc0\u48736 \u44036 \u49353 \u50640 \u49436  \u49884 \u51089  (\u49707 \u51088  n)\cf1\b0\par
+\par
+\b\uc0\u44221 \u47196  1: Toggle \u8594  Crank(1\u54924 )\b0\par
+\bullet  Toggle: \uc0\u48736 \u44053  \u8594  \u44160 \u51221 \par
+\bullet  Crank: B'(n) = (n + k) mod p\par
+\bullet  \uc0\u44208 \u44284 : (\u44160 \u51221 , n + k)\par
+\par
+\b\uc0\u44221 \u47196  2: Crank(k\u54924 ) \u8594  Toggle\b0\par
+\bullet  Crank k\uc0\u54924 : R'\super k\nosupersub (n) = (n + k) mod p\par
+\bullet  Toggle: \uc0\u48736 \u44053  \u8594  \u44160 \u51221 \par
+\bullet  \uc0\u44208 \u44284 : (\u44160 \u51221 , n + k)\par
+\par
+\b\uc0\u48708 \u44368 :\b0  (n + k) = (n + k) \uc0\u8658  \cf3\b\u54637 \u49345  \u47564 \u51313 !\cf1\b0\par
+\par
+
+\cf5\b\uc0\u44160 \u51008 \u49353 \u50640 \u49436  \u49884 \u51089  (\u49707 \u51088  n)\cf1\b0\par
+\par
+\b\uc0\u44221 \u47196  1: Toggle \u8594  Crank(1\u54924 )\b0\par
+\bullet  Toggle: \uc0\u44160 \u51221  \u8594  \u48736 \u44053 \par
+\bullet  Crank: R'(n) = (n + 1) mod p\par
+\bullet  \uc0\u44208 \u44284 : (\u48736 \u44053 , n + 1)\par
+\par
+\b\uc0\u44221 \u47196  2: Crank(k\u54924 ) \u8594  Toggle\b0\par
+\bullet  Crank k\uc0\u54924 : B'\super k\nosupersub (n) = (n + k\u183 k) mod p = (n + k\super 2\nosupersub ) mod p\par
+\bullet  Toggle: \uc0\u44160 \u51221  \u8594  \u48736 \u44053 \par
+\bullet  \uc0\u44208 \u44284 : (\u48736 \u44053 , n + k\super 2\nosupersub )\par
+\par
+\b\uc0\u48708 \u44368 :\b0  (n + 1) \uc0\u8801  (n + k\super 2\nosupersub ) (mod p)\par
+\par
+\pard\box\brdrs\brdrw10\brsp20\sa200\sl276\slmult1\cf2\b\f1 k\super 2\nosupersub  \uc0\u8801  1 (mod p)\cf1\b0\f0\par
+\pard\sa200\sl276\slmult1\par
+
+\b k\super 2\nosupersub  \uc0\u8801  1 (mod p)\u51032  \u54644 \b0\par
+k\super 2\nosupersub  - 1 \uc0\u8801  0 (mod p)\par
+(k - 1)(k + 1) \uc0\u8801  0 (mod p)\par
+\par
+p\uc0\u44032  \u49548 \u49688 \u51060 \u47728 \u47196 :\par
+\bullet  k - 1 \uc0\u8801  0 (mod p) \u8658  k = 1\par
+\bullet  k + 1 \uc0\u8801  0 (mod p) \u8658  k = p - 1\par
+\par
+1 \uc0\u8804  k \u8804  p \u48276 \u50948 \u50640 \u49436 : \b k = 1 \uc0\u46608 \u45716  k = p - 1\b0\par
+\par
+
+\b Successful\uc0\u44284  Special \u46041 \u49884  \u47564 \u51313 \b0\par
+Special \uc0\u51312 \u44148 : k = 1 \u46608 \u45716  k = p - 1\par
+\par
+Successful \uc0\u51312 \u44148  \u44160 \u51613 :\par
+\bullet  k = 1: gcd(1, p) = 1 \cf3\uc0\u10003 \cf1\par
+\bullet  k = p - 1: gcd(p-1, p) = 1 (\uc0\u50672 \u49549 \u54620  \u46160  \u51221 \u49688 \u45716  \u49436 \u47196 \u49548 ) \cf3\u10003 \cf1\par
+\par
+
+\b\uc0\u44208 \u47200 \b0\par
+\pard\box\brdrs\brdrw10\brsp20\sa200\sl276\slmult1\cf3\b\f1\fs28 Successful AND Special \uc0\u8660  k = 1 \u46608 \u45716  k = p - 1\cf1\b0\f0\fs22\par
+\pard\sa200\sl276\slmult1\par
+
+\pard\sb100\sa100\sl276\slmult1\cf5\b\fs28 9. \uc0\u52572 \u51333  \u45813 \par
+\pard\sa200\sl276\slmult1\cf1\b0\fs22\par
+
+\b\fs24 (a) Successful \uc0\u51312 \u44148 \b0\fs22\par
+\pard\box\brdrs\brdrw10\brsp20\sa200\sl276\slmult1\cf3\b\f1\fs24 gcd(k, p) = 1\cf1\b0\f0\fs22\par
+\pard\sa200\sl276\slmult1\par
+p\uc0\u44032  \u49548 \u49688 \u51060 \u47728 \u47196 , \u51060 \u45716  k \u8800  p \u50752  \u46041 \u52824 .\par
+\uc0\u51593 , \b 1 \u8804  k \u8804  p - 1\b0\par
+\par
+
+\b\fs24 (b) Successful AND Special \uc0\u51312 \u44148 \b0\fs22\par
+\pard\box\brdrs\brdrw10\brsp20\sa200\sl276\slmult1\cf3\b\f1\fs24 k = 1 \uc0\u46608 \u45716  k = p - 1\cf1\b0\f0\fs22\par
+\pard\sa200\sl276\slmult1\par
+}
